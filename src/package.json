@@ -3,12 +3,12 @@
   "version": "1.9.22",
   "productName": "CNCjs",
   "description": "CNC Milling Controller",
-  "homepage": "https://github.com/cncjs/cncjs",
+  "homepage": "https://github.com/michaudron/cncjs_custom",
   "author": "Cheton Wu <cheton@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:cncjs/cncjs.git"
+    "url": "git@github.com:michaudron/cncjs_custom.git"
   },
   "main": "main.js",
   "dependencies": {
