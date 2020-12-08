@@ -126,6 +126,23 @@ export const read = (req, res) => {
     res.send({ id, mtime, name, content });
 };
 
+export const readByName = (req, res) => {
+    const macroName = decodeURIComponent(req.query.name);
+    const records = getSanitizedRecords();
+    const record = find(records, { name: macroName });
+    log.debug(`readByName ${macroName}`);
+    if (!record) {
+        res.status(ERR_NOT_FOUND).send({
+            msg: `Macro not found [${macroName}]`
+        });
+        log.debug(`can't find macro ${macroName}`);
+
+        return;
+    }
+
+    const { id, mtime, name, content } = { ...record };
+    res.send({ id, mtime, name, content });
+};
 export const update = (req, res) => {
     const id = req.params.id;
     const records = getSanitizedRecords();

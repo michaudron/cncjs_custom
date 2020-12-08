@@ -38,7 +38,8 @@ import relays from '../../services/relays';
 
 // % commands
 const WAIT = '%wait';
-
+const RESUME = '%resume';
+const MACRO = '%macro';
 const log = logger('controller:Grbl');
 const noop = _.noop;
 
@@ -172,6 +173,14 @@ class GrblController {
                         }
                     }
                 }
+
+                // %resume
+                if (line === RESUME) {
+                    log.debug('Resume from feeder');
+                    this.workflow.resume();
+                    return `(${line})`;
+                }
+
                 if (line.indexOf('M90') > -1 || line.indexOf('M91') > -1) {
                     let idx = line.substring(3);
                     if (line.indexOf('M90') > -1) {
@@ -183,11 +192,12 @@ class GrblController {
                     }
                     data = `(${line})`;
                 }
+
                 {
-                    if (line === 'T22') {
-                        log.debug(`T22 Tool Change: ${line} `);
+                    if (line.indexOf(MACRO) > -1) {
+                        log.debug(`Run Macro macro: ${line} `);
                         this.emit('macro:auto', line);
-                        this.workflow.pause({ data: 'T22' });
+                        this.workflow.pause({ data: line });
                         data = `(${line})`;
                     }
                 }
@@ -252,14 +262,9 @@ class GrblController {
                 // M6 Tool Change
                 if (_.includes(words, 'M6')) {
                     log.debug('M6 Tool Change');
-                    this.feeder.hold({ data: 'M6' }); // Hold reason
-
-                    // Surround M6 with parentheses to ignore
-                    // unsupported command error. If we nuke the whole
-                    // line, then we'll likely lose other commands that
-                    // share the line, like a T~.  This makes tool
-                    // changes complicated.
-                    line = line.replace('M6', '(M6)');
+                    this.feeder.hold({ data: line }); // Hold reason
+                    this.emit('macro:auto', line);
+                    line = `(${line})`;
                 }
 
                 return line;
@@ -341,14 +346,14 @@ class GrblController {
                         line = `(${line})`;
                     }
                 }
-
                 // M6 Tool Change
                 if (_.includes(words, 'M6')) {
-                    log.debug(`M6 Tool Change: line=${sent + 1}, sent=${sent}, received=${received}`);
-                    this.workflow.pause({ data: 'M6' });
-
+                    log.debug(`sender - M6 Tool Change: line=${sent + 1}, sent=${sent}, received=${received}`);
+                    this.workflow.pause({ data: line });
+                    this.emit('macro:auto', line);
+                    log.debug(`sender - Run Macro: ${line}`);
                     // Surround M6 with parentheses to ignore unsupported command error
-                    line = line.replace('M6', '(M6)');
+                    line = `(${line})`;
                 }
 
                 return line;
