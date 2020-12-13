@@ -212,7 +212,7 @@ class MacroWidget extends PureComponent {
         },
         'macro:auto': async (data) => {
             log.debug('Run macro', data);
-            let id = data.replace('M6 ', '').replace('M6', '').trim();
+            let id = data.replace('M6 ', '').trim();
             let res;
             try {
                 res = await api.macros.readByName(id);
@@ -220,9 +220,9 @@ class MacroWidget extends PureComponent {
                     res = await api.macros.read(id);
                 }
             } catch (e) {
-                log.debug('Macro not found', id);
+                console.log('Macro not found', id, e);
             }
-
+            console.log('Macro found', res, id);
             if (res) {
                 let record = res.body;
                 this.actions.runMacro(record.id, record);

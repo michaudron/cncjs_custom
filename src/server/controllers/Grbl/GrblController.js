@@ -190,7 +190,7 @@ class GrblController {
                         log.debug('writeFilter turn relay on: ' + idx);
                         relays.emit('relay:on', idx);
                     }
-                    data = `(${line})`;
+                    return `(${line})`;
                 }
 
                 {
@@ -198,7 +198,7 @@ class GrblController {
                         log.debug(`Run Macro macro: ${line} `);
                         this.emit('macro:auto', line);
                         this.workflow.pause({ data: line });
-                        data = `(${line})`;
+                        return `(${line})`;
                     }
                 }
                 return data;
@@ -252,11 +252,16 @@ class GrblController {
                     }
                 }
 
-                { // Relays: M90, M91
-                    const programMode = _.intersection(words, ['M90', 'M91'])[0];
-                    if (programMode === 'M90' || programMode === 'M91') {
-                        line = `(${line})`;
+                if (line.indexOf('M90') > -1 || line.indexOf('M91') > -1) {
+                    let idx = line.substring(3);
+                    if (line.indexOf('M90') > -1) {
+                        log.debug('writeFilter turn relay off: ' + idx);
+                        relays.emit('relay:off', idx);
+                    } else {
+                        log.debug('writeFilter turn relay on: ' + idx);
+                        relays.emit('relay:on', idx);
                     }
+                    return `(${line})`;
                 }
 
                 // M6 Tool Change
@@ -264,7 +269,7 @@ class GrblController {
                     log.debug('M6 Tool Change');
                     this.feeder.hold({ data: line }); // Hold reason
                     this.emit('macro:auto', line);
-                    line = `(${line})`;
+                    return `(${line})`;
                 }
 
                 return line;
@@ -340,12 +345,18 @@ class GrblController {
                     }
                 }
 
-                { // Relays: M90, M91
-                    const programMode = _.intersection(words, ['M90', 'M91'])[0];
-                    if (programMode === 'M90' || programMode === 'M91') {
-                        line = `(${line})`;
+                if (line.indexOf('M90') > -1 || line.indexOf('M91') > -1) {
+                    let idx = line.substring(3);
+                    if (line.indexOf('M90') > -1) {
+                        log.debug('writeFilter turn relay off: ' + idx);
+                        relays.emit('relay:off', idx);
+                    } else {
+                        log.debug('writeFilter turn relay on: ' + idx);
+                        relays.emit('relay:on', idx);
                     }
+                    return `(${line})`;
                 }
+
                 // M6 Tool Change
                 if (_.includes(words, 'M6')) {
                     log.debug(`sender - M6 Tool Change: line=${sent + 1}, sent=${sent}, received=${received}`);
@@ -353,7 +364,7 @@ class GrblController {
                     this.emit('macro:auto', line);
                     log.debug(`sender - Run Macro: ${line}`);
                     // Surround M6 with parentheses to ignore unsupported command error
-                    line = `(${line})`;
+                    return `(${line})`;
                 }
 
                 return line;
