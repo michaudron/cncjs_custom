@@ -209,6 +209,26 @@ class MacroWidget extends PureComponent {
                     state: workflowState
                 }
             }));
+        },
+        'macro:auto': async (data) => {
+            log.debug('Run macro', data);
+            let id = data.replace('M6 ', '').trim();
+            let res;
+            try {
+                res = await api.macros.readByName(id);
+                if (!res) {
+                    res = await api.macros.read(id);
+                }
+            } catch (e) {
+                console.log('Macro not found', id, e);
+            }
+            console.log('Macro found', res, id);
+            if (res) {
+                let record = res.body;
+                this.actions.runMacro(record.id, record);
+            } else {
+                log.debug('Macro not found', id);
+            }
         }
     };
 

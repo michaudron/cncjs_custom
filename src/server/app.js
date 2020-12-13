@@ -299,6 +299,7 @@ const appMain = () => {
         app.post(urljoin(settings.route, 'api/macros'), api.macros.create);
         app.get(urljoin(settings.route, 'api/macros/:id'), api.macros.read);
         app.put(urljoin(settings.route, 'api/macros/:id'), api.macros.update);
+        app.get(urljoin(settings.route, 'api/macros/query/byname'), api.macros.readByName);
         app.delete(urljoin(settings.route, 'api/macros/:id'), api.macros.__delete);
 
         // MDI

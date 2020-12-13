@@ -397,6 +397,19 @@ macros.read = (id) => new Promise((resolve, reject) => {
         });
 });
 
+macros.readByName = (name) => new Promise((resolve, reject) => {
+    authrequest
+        .get('/api/macros/query/byname?name=' + encodeURIComponent(name))
+        .end((err, res) => {
+            if (err) {
+                reject(res);
+            } else {
+                resolve(res);
+            }
+        });
+});
+
+
 macros.update = (id, options) => new Promise((resolve, reject) => {
     authrequest
         .put('/api/macros/' + id)
