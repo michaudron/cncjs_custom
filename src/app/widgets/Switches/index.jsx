@@ -90,11 +90,7 @@ class SwitchesWidget extends PureComponent {
                     state: workflowState
                 }
             }));
-        },
-        'relay:status': (relayStatus) => {
-            console.log('in switches', relayStatus);
         }
-
     };
 
     content = null;
@@ -138,6 +134,43 @@ class SwitchesWidget extends PureComponent {
             modal: {
                 name: MODAL_NONE,
                 params: {}
+            },
+            switches: {
+                connected: false,
+                switch: [
+                    {
+                        title: 'switch1',
+                        state: false
+                    },
+                    {
+                        title: 'switch2',
+                        state: false
+                    },
+                    {
+                        title: 'switch3',
+                        state: false
+                    },
+                    {
+                        title: 'switch4',
+                        state: false
+                    },
+                    {
+                        title: 'switch5',
+                        state: false
+                    },
+                    {
+                        title: 'switch6',
+                        state: false
+                    },
+                    {
+                        title: 'switch7',
+                        state: false
+                    },
+                    {
+                        title: 'switch8',
+                        state: false
+                    }
+                ]
             }
         };
     }
@@ -153,6 +186,23 @@ class SwitchesWidget extends PureComponent {
         Object.keys(this.controllerEvents).forEach(eventName => {
             const callback = this.controllerEvents[eventName];
             controller.removeListener(eventName, callback);
+        });
+    }
+
+    setSwtichState(data) {
+        const switchStates = data.split(',');
+        const self = this;
+        let tmpSwitches = self.state.switches.switch;
+
+        for (let i = 0; i < switchStates.length; i++) {
+            tmpSwitches[i].state = switchStates[i] === 'ON';
+            console.log(self.state.switches.switch[i]);
+        }
+        self.setState({
+            switches: {
+                connected: true,
+                switch: tmpSwitches
+            }
         });
     }
 
@@ -291,7 +341,7 @@ class SwitchesWidget extends PureComponent {
                         }}
                         config={config}
                         disabled={state.disabled}
-                        port={state.port}
+                        state={state}
                     />
                 </Widget.Content>
             </Widget>
