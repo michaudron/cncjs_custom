@@ -533,5 +533,7 @@
     "Show Cutting Tool": "工具を表示する",
     "Ready to start": "スタートの準備ができました",
     "Connect to an IP camera": "IPカメラと接続",
-    "The URL must be for a Motion JPEG (mjpeg) HTTP or RTSP stream.": "このURLはモーションJPEG (mjpeg) HTTP もしくは RTSP ストリームである必要があります。"
+    "The URL must be for a Motion JPEG (mjpeg) HTTP or RTSP stream.": "このURLはモーションJPEG (mjpeg) HTTP もしくは RTSP ストリームである必要があります。",
+    "Switch Widget": "",
+    "This widget allows you to monitor and control switches attached to the relays": ""
 }
