@@ -14,7 +14,6 @@ class Relay {
             if (!this.io || !this.io.connected) {
                 this.io = clientIO(settings.backend.relayWS);
                 log.debug('Connecting to relay service: ' + settings.backend.relayWS);
-                this.io.emit('status');
 
                 this.io.on('connect', () => {
                     log.debug('Connected to relay service');
@@ -34,6 +33,7 @@ class Relay {
                     controller.emit('relay:status', data);
                 });
             }
+            this.io.emit('relay:status');
             this.emit('status');
         } else {
             log.warn('Missing configuration for relays. M90 and M91 will not be enabled');

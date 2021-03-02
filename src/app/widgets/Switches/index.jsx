@@ -72,6 +72,10 @@ class SwitchesWidget extends PureComponent {
                 const forceGet = true;
                 this.content.reload(forceGet);
             }
+        },
+        getRelayStatus: () => {
+            console.log('Get relay status');
+            controller.getRelayStatus();
         }
     };
 
@@ -90,6 +94,9 @@ class SwitchesWidget extends PureComponent {
                     state: workflowState
                 }
             }));
+        },
+        'relay:status': (relayStatus) => {
+            this.setSwtichState(relayStatus);
         }
     };
 
@@ -115,6 +122,7 @@ class SwitchesWidget extends PureComponent {
         this.config.set('disabled', disabled);
         this.config.set('minimized', minimized);
         this.config.set('title', title);
+        this.action.getRelayStatus();
     }
 
     getInitialState() {
@@ -193,10 +201,9 @@ class SwitchesWidget extends PureComponent {
         const switchStates = data.split(',');
         const self = this;
         let tmpSwitches = self.state.switches.switch;
-
+        console.log(switchStates, data);
         for (let i = 0; i < switchStates.length; i++) {
             tmpSwitches[i].state = switchStates[i] === 'ON';
-            console.log(self.state.switches.switch[i]);
         }
         self.setState({
             switches: {
@@ -342,6 +349,7 @@ class SwitchesWidget extends PureComponent {
                         config={config}
                         disabled={state.disabled}
                         state={state}
+                        actions={action}
                     />
                 </Widget.Content>
             </Widget>
