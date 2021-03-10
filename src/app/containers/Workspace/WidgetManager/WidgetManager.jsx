@@ -126,6 +126,13 @@ class WidgetManager extends PureComponent {
             details: i18n._('This widget lets you monitor a webcam.'),
             visible: true,
             disabled: false
+        },
+        {
+            id: 'switches',
+            caption: i18n._('Switch Widget'),
+            details: i18n._('This widget allows you to monitor and control switches attached to the relays'),
+            visible: true,
+            disabled: false
         }
     ];
 
