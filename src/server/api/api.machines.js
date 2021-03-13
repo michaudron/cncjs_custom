@@ -46,8 +46,10 @@ const getSanitizedRecords = () => {
 };
 
 const ensureMachineProfile = (payload) => {
-    const { id, name, limits } = { ...payload };
+    const { id, name, limits, toolBase, toolSlots } = { ...payload };
     const { xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0 } = { ...limits };
+    const { zpos = 0, xpos = 0, ypos = 0, ysafe = 0, zsafe = 0 } = { ...toolBase };
+    const { slot1 = 0, slot2 = 0, slot3 = 0, slot4 = 0, slot5 = 0, slot6 = 0, slot7 = 0, slot8 = 0 } = { ...toolSlots };
 
     return {
         id,
@@ -59,6 +61,28 @@ const ensureMachineProfile = (payload) => {
             ymax: ensureNumber(ymax) || 0,
             zmin: ensureNumber(zmin) || 0,
             zmax: ensureNumber(zmax) || 0,
+        },
+        toolBase: {
+            zpos: ensureNumber(zpos) || 0,
+            xpos: ensureNumber(xpos) || 0,
+            ypos: ensureNumber(ypos) || 0,
+            ysafe: ensureNumber(ysafe) || 0,
+            zsafe: ensureNumber(zsafe) || 0
+        },
+        toolSlots: {
+            slot1: ensureNumber(slot1) || 0,
+            slot2: ensureNumber(slot2) || 0,
+            slot3: ensureNumber(slot3) || 0,
+            slot4: ensureNumber(slot4) || 0,
+            slot5: ensureNumber(slot5) || 0,
+            slot6: ensureNumber(slot6) || 0,
+            slot7: ensureNumber(slot7) || 0,
+            slot8: ensureNumber(slot8) || 0
+        },
+        probeLocation: {
+            zsafe: ensureNumber(zsafe) || 0,
+            xpos: ensureNumber(xpos) || 0,
+            ypos: ensureNumber(ypos) || 0
         }
     };
 };
@@ -149,6 +173,22 @@ export const update = (req, res) => {
             ['limits.ymax', ensureNumber],
             ['limits.zmin', ensureNumber],
             ['limits.zmax', ensureNumber],
+            ['toolBase.zpos', ensureNumber],
+            ['toolBase.xpos', ensureNumber],
+            ['toolBase.ypos', ensureNumber],
+            ['toolBase.ysafe', ensureNumber],
+            ['toolBase.zsafe', ensureNumber],
+            ['toolSlots.slot1', ensureNumber],
+            ['toolSlots.slot2', ensureNumber],
+            ['toolSlots.slot3', ensureNumber],
+            ['toolSlots.slot4', ensureNumber],
+            ['toolSlots.slot5', ensureNumber],
+            ['toolSlots.slot6', ensureNumber],
+            ['toolSlots.slot7', ensureNumber],
+            ['toolSlots.slot8', ensureNumber],
+            ['probeLocation.zsafe', ensureNumber],
+            ['probeLocation.xpos', ensureNumber],
+            ['probeLocation.ypos', ensureNumber]
         ].forEach(it => {
             const [key, ensureType] = it;
             const defaultValue = _get(record, key);
