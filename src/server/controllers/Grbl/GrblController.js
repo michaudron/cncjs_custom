@@ -190,16 +190,21 @@ class GrblController {
                         log.debug('writeFilter turn relay on: ' + idx);
                         relays.emit('relay:on', idx);
                     }
-                    return `(${line})`;
+                    return `;${line}`;
+                }
+                // M6 Tool Change
+                if (line.indexOf('M6') > -1) {
+                    log.debug('writeFilyter M6 Tool Change');
+                    // this.feeder.hold({ data: line }); // Hold reason
+                    //this.emit('toolchange', line);
+                    return `;${line}`;
                 }
 
-                {
-                    if (line.indexOf(MACRO) > -1) {
-                        log.debug(`Run Macro macro: ${line} `);
-                        this.emit('macro:auto', line);
-                        this.workflow.pause({ data: line });
-                        return `(${line})`;
-                    }
+                if (line.indexOf(MACRO) > -1) {
+                    log.debug(`Run Macro macro: ${line} `);
+                    this.emit('macro:auto', line);
+                    this.workflow.pause({ data: line });
+                    return `;${line}`;
                 }
                 return data;
             }
@@ -268,7 +273,7 @@ class GrblController {
                 if (_.includes(words, 'M6')) {
                     log.debug('M6 Tool Change');
                     this.feeder.hold({ data: line }); // Hold reason
-                    this.emit('macro:auto', line);
+                    this.emit('toolchange', line);
                     return `(${line})`;
                 }
 
@@ -361,8 +366,8 @@ class GrblController {
                 if (_.includes(words, 'M6')) {
                     log.debug(`sender - M6 Tool Change: line=${sent + 1}, sent=${sent}, received=${received}`);
                     this.workflow.pause({ data: line });
-                    this.emit('macro:auto', line);
-                    log.debug(`sender - Run Macro: ${line}`);
+                    this.emit('toolchange', line);
+                    log.debug(`sender - toolchange: ${line}`);
                     // Surround M6 with parentheses to ignore unsupported command error
                     return `(${line})`;
                 }

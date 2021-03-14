@@ -535,5 +535,8 @@
     "Connect to an IP camera": "",
     "The URL must be for a Motion JPEG (mjpeg) HTTP or RTSP stream.": "",
     "Switch Widget": "",
-    "This widget allows you to monitor and control switches attached to the relays": ""
+    "This widget allows you to monitor and control switches attached to the relays": "",
+    "Tool Base": "",
+    "Tool Slots": "",
+    "Probe Location": ""
 }
