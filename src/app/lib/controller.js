@@ -1,6 +1,6 @@
-import Controller from 'cncjs-controller';
 import io from 'socket.io-client';
+import SerialController from './serialconnection/controller';
 
-const controller = new Controller(io);
+const serialController = new SerialController(io);
 
-export default controller;
+export default serialController;

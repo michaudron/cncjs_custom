@@ -11,10 +11,7 @@ import { ToastNotification } from 'app/components/Notifications';
 import controller from 'app/lib/controller';
 import i18n from 'app/lib/i18n';
 import {
-    GRBL,
-    MARLIN,
-    SMOOTHIE,
-    TINYG
+    GRBL
 } from '../../constants';
 
 class Connection extends PureComponent {
@@ -110,9 +107,6 @@ class Connection extends PureComponent {
         const enableHardwareFlowControl = get(connection, 'serial.rtscts', false);
         const canSelectControllers = (controller.loadedControllers.length > 1);
         const hasGrblController = includes(controller.loadedControllers, GRBL);
-        const hasMarlinController = includes(controller.loadedControllers, MARLIN);
-        const hasSmoothieController = includes(controller.loadedControllers, SMOOTHIE);
-        const hasTinyGController = includes(controller.loadedControllers, TINYG);
         const notLoading = !loading;
         const notConnecting = !connecting;
         const notConnected = !connected;
@@ -153,54 +147,6 @@ class Connection extends PureComponent {
                                         }}
                                     >
                                         {GRBL}
-                                    </button>
-                                )}
-                                {hasMarlinController && (
-                                    <button
-                                        type="button"
-                                        className={cx(
-                                            'btn',
-                                            'btn-default',
-                                            { 'btn-select': controllerType === MARLIN }
-                                        )}
-                                        disabled={!canChangeController}
-                                        onClick={() => {
-                                            actions.changeController(MARLIN);
-                                        }}
-                                    >
-                                        {MARLIN}
-                                    </button>
-                                )}
-                                {hasSmoothieController && (
-                                    <button
-                                        type="button"
-                                        className={cx(
-                                            'btn',
-                                            'btn-default',
-                                            { 'btn-select': controllerType === SMOOTHIE }
-                                        )}
-                                        disabled={!canChangeController}
-                                        onClick={() => {
-                                            actions.changeController(SMOOTHIE);
-                                        }}
-                                    >
-                                        {SMOOTHIE}
-                                    </button>
-                                )}
-                                {hasTinyGController && (
-                                    <button
-                                        type="button"
-                                        className={cx(
-                                            'btn',
-                                            'btn-default',
-                                            { 'btn-select': controllerType === TINYG }
-                                        )}
-                                        disabled={!canChangeController}
-                                        onClick={() => {
-                                            actions.changeController(TINYG);
-                                        }}
-                                    >
-                                        {TINYG}
                                     </button>
                                 )}
                             </div>
