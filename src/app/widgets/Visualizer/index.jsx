@@ -124,7 +124,7 @@ const displayWebGLErrorMessage = () => {
         </Modal>
     ));
 };
-
+/* eslint-disable-next-line react/prop-types */
 const GCodeName = ({ name, style, ...props }) => {
     if (!name) {
         return null;

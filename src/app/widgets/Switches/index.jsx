@@ -74,7 +74,6 @@ class SwitchesWidget extends PureComponent {
             }
         },
         getRelayStatus: () => {
-            console.log('Get relay status');
             controller.getRelayStatus();
         }
     };
@@ -201,7 +200,7 @@ class SwitchesWidget extends PureComponent {
         const switchStates = data.split(',');
         const self = this;
         let tmpSwitches = self.state.switches.switch;
-        console.log(switchStates, data);
+
         for (let i = 0; i < switchStates.length; i++) {
             tmpSwitches[i].state = switchStates[i] === 'ON';
         }

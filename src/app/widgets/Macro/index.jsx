@@ -208,9 +208,9 @@ class MacroWidget extends PureComponent {
                     res = await api.macros.read(id);
                 }
             } catch (e) {
-                console.log('Macro not found', id, e);
+                log.error(`Failed to load the macro [Not found]: id=${id}`);
             }
-            console.log('Macro found', res, id);
+
             if (res) {
                 let record = res.body;
                 this.actions.runMacro(record.id, record);

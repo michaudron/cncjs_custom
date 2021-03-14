@@ -324,6 +324,7 @@ class UpdateRecord extends Component {
             </Row>
         </FlexContainer>
     );
+
     renderProbeLocation = () => (
         <FlexContainer fluid gutterWidth={0}>
             <Row>
