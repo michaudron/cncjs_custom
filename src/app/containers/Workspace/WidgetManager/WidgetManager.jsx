@@ -5,7 +5,7 @@ import union from 'lodash/union';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import Modal from 'app/components/Modal';
-import { GRBL, MARLIN, SMOOTHIE, TINYG } from 'app/constants';
+import { GRBL } from 'app/constants';
 import controller from 'app/lib/controller';
 import i18n from 'app/lib/i18n';
 import store from 'app/store';
@@ -47,27 +47,6 @@ class WidgetManager extends PureComponent {
             id: 'grbl',
             caption: i18n._('Grbl Widget'),
             details: i18n._('This widget shows the Grbl state and provides Grbl specific features.'),
-            visible: true,
-            disabled: false
-        },
-        {
-            id: 'marlin',
-            caption: i18n._('Marlin Widget'),
-            details: i18n._('This widget shows the Marlin state and provides Marlin specific features.'),
-            visible: true,
-            disabled: false
-        },
-        {
-            id: 'smoothie',
-            caption: i18n._('Smoothie Widget'),
-            details: i18n._('This widget shows the Smoothie state and provides Smoothie specific features.'),
-            visible: true,
-            disabled: false
-        },
-        {
-            id: 'tinyg',
-            caption: i18n._('TinyG Widget'),
-            details: i18n._('This widget shows the TinyG state and provides TinyG specific features.'),
             visible: true,
             disabled: false
         },
@@ -157,15 +136,6 @@ class WidgetManager extends PureComponent {
 
         this.widgetList = this.widgetList.filter(widgetItem => {
             if (widgetItem.id === 'grbl' && !includes(controller.loadedControllers, GRBL)) {
-                return false;
-            }
-            if (widgetItem.id === 'marlin' && !includes(controller.loadedControllers, MARLIN)) {
-                return false;
-            }
-            if (widgetItem.id === 'smoothie' && !includes(controller.loadedControllers, SMOOTHIE)) {
-                return false;
-            }
-            if (widgetItem.id === 'tinyg' && !includes(controller.loadedControllers, TINYG)) {
                 return false;
             }
             return true;

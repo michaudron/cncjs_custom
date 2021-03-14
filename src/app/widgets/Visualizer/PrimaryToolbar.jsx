@@ -21,33 +21,6 @@ import {
     GRBL_ACTIVE_STATE_SLEEP,
     GRBL_ACTIVE_STATE_ALARM,
     GRBL_ACTIVE_STATE_CHECK,
-    // Marlin
-    MARLIN,
-    // Smoothie
-    SMOOTHIE,
-    SMOOTHIE_ACTIVE_STATE_IDLE,
-    SMOOTHIE_ACTIVE_STATE_RUN,
-    SMOOTHIE_ACTIVE_STATE_HOLD,
-    SMOOTHIE_ACTIVE_STATE_DOOR,
-    SMOOTHIE_ACTIVE_STATE_HOME,
-    SMOOTHIE_ACTIVE_STATE_ALARM,
-    SMOOTHIE_ACTIVE_STATE_CHECK,
-    // TinyG
-    TINYG,
-    TINYG_MACHINE_STATE_INITIALIZING,
-    TINYG_MACHINE_STATE_READY,
-    TINYG_MACHINE_STATE_ALARM,
-    TINYG_MACHINE_STATE_STOP,
-    TINYG_MACHINE_STATE_END,
-    TINYG_MACHINE_STATE_RUN,
-    TINYG_MACHINE_STATE_HOLD,
-    TINYG_MACHINE_STATE_PROBE,
-    TINYG_MACHINE_STATE_CYCLE,
-    TINYG_MACHINE_STATE_HOMING,
-    TINYG_MACHINE_STATE_JOG,
-    TINYG_MACHINE_STATE_INTERLOCK,
-    TINYG_MACHINE_STATE_SHUTDOWN,
-    TINYG_MACHINE_STATE_PANIC,
     // Workflow
     WORKFLOW_STATE_IDLE
 } from 'app/constants';
@@ -120,73 +93,6 @@ class PrimaryToolbar extends PureComponent {
             }[activeState];
         }
 
-        if (controllerType === MARLIN) {
-            // Marlin does not have machine state
-        }
-
-        if (controllerType === SMOOTHIE) {
-            const activeState = _.get(controllerState, 'status.activeState');
-
-            stateStyle = {
-                [SMOOTHIE_ACTIVE_STATE_IDLE]: 'controller-state-default',
-                [SMOOTHIE_ACTIVE_STATE_RUN]: 'controller-state-primary',
-                [SMOOTHIE_ACTIVE_STATE_HOLD]: 'controller-state-warning',
-                [SMOOTHIE_ACTIVE_STATE_DOOR]: 'controller-state-warning',
-                [SMOOTHIE_ACTIVE_STATE_HOME]: 'controller-state-primary',
-                [SMOOTHIE_ACTIVE_STATE_ALARM]: 'controller-state-danger',
-                [SMOOTHIE_ACTIVE_STATE_CHECK]: 'controller-state-info'
-            }[activeState];
-
-            stateText = {
-                [SMOOTHIE_ACTIVE_STATE_IDLE]: i18n.t('controller:Smoothie.activeState.idle'),
-                [SMOOTHIE_ACTIVE_STATE_RUN]: i18n.t('controller:Smoothie.activeState.run'),
-                [SMOOTHIE_ACTIVE_STATE_HOLD]: i18n.t('controller:Smoothie.activeState.hold'),
-                [SMOOTHIE_ACTIVE_STATE_DOOR]: i18n.t('controller:Smoothie.activeState.door'),
-                [SMOOTHIE_ACTIVE_STATE_HOME]: i18n.t('controller:Smoothie.activeState.home'),
-                [SMOOTHIE_ACTIVE_STATE_ALARM]: i18n.t('controller:Smoothie.activeState.alarm'),
-                [SMOOTHIE_ACTIVE_STATE_CHECK]: i18n.t('controller:Smoothie.activeState.check')
-            }[activeState];
-        }
-
-        if (controllerType === TINYG) {
-            const machineState = _.get(controllerState, 'sr.machineState');
-
-            // https://github.com/synthetos/g2/wiki/Alarm-Processing
-            stateStyle = {
-                [TINYG_MACHINE_STATE_INITIALIZING]: 'controller-state-warning',
-                [TINYG_MACHINE_STATE_READY]: 'controller-state-default',
-                [TINYG_MACHINE_STATE_ALARM]: 'controller-state-danger',
-                [TINYG_MACHINE_STATE_STOP]: 'controller-state-default',
-                [TINYG_MACHINE_STATE_END]: 'controller-state-default',
-                [TINYG_MACHINE_STATE_RUN]: 'controller-state-primary',
-                [TINYG_MACHINE_STATE_HOLD]: 'controller-state-warning',
-                [TINYG_MACHINE_STATE_PROBE]: 'controller-state-primary',
-                [TINYG_MACHINE_STATE_CYCLE]: 'controller-state-primary',
-                [TINYG_MACHINE_STATE_HOMING]: 'controller-state-primary',
-                [TINYG_MACHINE_STATE_JOG]: 'controller-state-primary',
-                [TINYG_MACHINE_STATE_INTERLOCK]: 'controller-state-warning',
-                [TINYG_MACHINE_STATE_SHUTDOWN]: 'controller-state-danger',
-                [TINYG_MACHINE_STATE_PANIC]: 'controller-state-danger'
-            }[machineState];
-
-            stateText = {
-                [TINYG_MACHINE_STATE_INITIALIZING]: i18n.t('controller:TinyG.machineState.initializing'),
-                [TINYG_MACHINE_STATE_READY]: i18n.t('controller:TinyG.machineState.ready'),
-                [TINYG_MACHINE_STATE_ALARM]: i18n.t('controller:TinyG.machineState.alarm'),
-                [TINYG_MACHINE_STATE_STOP]: i18n.t('controller:TinyG.machineState.stop'),
-                [TINYG_MACHINE_STATE_END]: i18n.t('controller:TinyG.machineState.end'),
-                [TINYG_MACHINE_STATE_RUN]: i18n.t('controller:TinyG.machineState.run'),
-                [TINYG_MACHINE_STATE_HOLD]: i18n.t('controller:TinyG.machineState.hold'),
-                [TINYG_MACHINE_STATE_PROBE]: i18n.t('controller:TinyG.machineState.probe'),
-                [TINYG_MACHINE_STATE_CYCLE]: i18n.t('controller:TinyG.machineState.cycle'),
-                [TINYG_MACHINE_STATE_HOMING]: i18n.t('controller:TinyG.machineState.homing'),
-                [TINYG_MACHINE_STATE_JOG]: i18n.t('controller:TinyG.machineState.jog'),
-                [TINYG_MACHINE_STATE_INTERLOCK]: i18n.t('controller:TinyG.machineState.interlock'),
-                [TINYG_MACHINE_STATE_SHUTDOWN]: i18n.t('controller:TinyG.machineState.shutdown'),
-                [TINYG_MACHINE_STATE_PANIC]: i18n.t('controller:TinyG.machineState.panic')
-            }[machineState];
-        }
-
         return (
             <div
                 className={classNames(
@@ -207,18 +113,6 @@ class PrimaryToolbar extends PureComponent {
 
         if (controllerType === GRBL) {
             return _.get(controllerState, 'parserstate.modal.wcs') || defaultWCS;
-        }
-
-        if (controllerType === MARLIN) {
-            return _.get(controllerState, 'modal.wcs') || defaultWCS;
-        }
-
-        if (controllerType === SMOOTHIE) {
-            return _.get(controllerState, 'parserstate.modal.wcs') || defaultWCS;
-        }
-
-        if (controllerType === TINYG) {
-            return _.get(controllerState, 'sr.modal.wcs') || defaultWCS;
         }
 
         return defaultWCS;
