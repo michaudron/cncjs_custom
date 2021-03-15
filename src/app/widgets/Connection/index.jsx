@@ -4,7 +4,6 @@ import reverse from 'lodash/reverse';
 import sortBy from 'lodash/sortBy';
 import uniq from 'lodash/uniq';
 import includes from 'lodash/includes';
-import map from 'lodash/map';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import Space from 'app/components/Space';
@@ -110,18 +109,22 @@ class ConnectionWidget extends PureComponent {
 
             this.stopLoading();
 
-            const port = this.config.get('port') || '';
+            const arduinoPort = ports.filter(obj => {
+                return obj.manufacturer.indexOf('Arduino') > -1;
+            });
 
-            if (includes(map(ports, 'port'), port)) {
+            const port = (arduinoPort ? arduinoPort[0].port : '');
+
+            if (arduinoPort) {
                 this.setState(state => ({
                     alertMessage: '',
                     port: port,
                     ports: ports
                 }));
 
-                const { autoReconnect, hasReconnected } = this.state;
+                const { hasReconnected } = this.state;
 
-                if (autoReconnect && !hasReconnected) {
+                if (!hasReconnected) {
                     const { baudrate } = this.state;
 
                     this.setState(state => ({

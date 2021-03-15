@@ -74,7 +74,8 @@ class SwitchesWidget extends PureComponent {
             }
         },
         getRelayStatus: () => {
-            controller.getRelayStatus();
+            // TODO - get back to fixing this need to deal with the rlays and change them to PI communication
+            // controller.getRelayStatus();
         }
     };
 
