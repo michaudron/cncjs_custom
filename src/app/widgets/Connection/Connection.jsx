@@ -1,18 +1,9 @@
 import find from 'lodash/find';
-import get from 'lodash/get';
-import includes from 'lodash/includes';
-import map from 'lodash/map';
-import cx from 'classnames';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import Select from 'react-select';
 import Space from 'app/components/Space';
 import { ToastNotification } from 'app/components/Notifications';
-import controller from 'app/lib/controller';
 import i18n from 'app/lib/i18n';
-import {
-    GRBL
-} from '../../constants';
 
 class Connection extends PureComponent {
     static propTypes = {
@@ -96,27 +87,11 @@ class Connection extends PureComponent {
     render() {
         const { state, actions } = this.props;
         const {
-            loading, connecting, connected,
-            controllerType,
-            ports, baudrates,
+            connected,
             port, baudrate,
-            autoReconnect,
-            connection,
             alertMessage
         } = state;
-        const enableHardwareFlowControl = get(connection, 'serial.rtscts', false);
-        const canSelectControllers = (controller.loadedControllers.length > 1);
-        const hasGrblController = includes(controller.loadedControllers, GRBL);
-        const notLoading = !loading;
-        const notConnecting = !connecting;
         const notConnected = !connected;
-        const canRefresh = notLoading && notConnected;
-        const canChangeController = notLoading && notConnected;
-        const canChangePort = notLoading && notConnected;
-        const canChangeBaudrate = notLoading && notConnected && (!(this.isPortInUse(port)));
-        const canToggleHardwareFlowControl = notConnected;
-        const canOpenPort = port && baudrate && notConnecting && notConnected;
-        const canClosePort = connected;
 
         return (
             <div>
@@ -129,142 +104,20 @@ class Connection extends PureComponent {
                         {alertMessage}
                     </ToastNotification>
                 )}
-                {canSelectControllers && (
-                    <div className="form-group">
-                        <div className="input-group input-group-sm">
-                            <div className="input-group-btn">
-                                {hasGrblController && (
-                                    <button
-                                        type="button"
-                                        className={cx(
-                                            'btn',
-                                            'btn-default',
-                                            { 'btn-select': controllerType === GRBL }
-                                        )}
-                                        disabled={!canChangeController}
-                                        onClick={() => {
-                                            actions.changeController(GRBL);
-                                        }}
-                                    >
-                                        {GRBL}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
                 <div className="form-group">
-                    <label className="control-label">{i18n._('Port')}</label>
-                    <div className="input-group input-group-sm">
-                        <Select
-                            backspaceRemoves={false}
-                            className="sm"
-                            clearable={false}
-                            disabled={!canChangePort}
-                            name="port"
-                            noResultsText={i18n._('No ports available')}
-                            onChange={actions.onChangePortOption}
-                            optionRenderer={this.renderPortOption}
-                            options={map(ports, (o) => ({
-                                value: o.port,
-                                label: o.port,
-                                manufacturer: o.manufacturer,
-                                inuse: o.inuse
-                            }))}
-                            placeholder={i18n._('Choose a port')}
-                            searchable={false}
-                            value={port}
-                            valueRenderer={this.renderPortValue}
-                        />
-                        <div className="input-group-btn">
-                            <button
-                                type="button"
-                                className="btn btn-default"
-                                name="btn-refresh"
-                                title={i18n._('Refresh')}
-                                onClick={actions.handleRefreshPorts}
-                                disabled={!canRefresh}
-                            >
-                                <i
-                                    className={cx(
-                                        'fa',
-                                        'fa-refresh',
-                                        { 'fa-spin': loading }
-                                    )}
-                                />
-                            </button>
-                        </div>
-                    </div>
+                    <label className="control-label">{i18n._('Port')}: </label>
+                    <label className="control-label">{port}</label>
                 </div>
                 <div className="form-group">
-                    <label className="control-label">{i18n._('Baud rate')}</label>
-                    <Select
-                        backspaceRemoves={false}
-                        className="sm"
-                        clearable={false}
-                        disabled={!canChangeBaudrate}
-                        menuContainerStyle={{ zIndex: 5 }}
-                        name="baudrate"
-                        onChange={actions.onChangeBaudrateOption}
-                        options={map(baudrates, (value) => ({
-                            value: value,
-                            label: Number(value).toString()
-                        }))}
-                        placeholder={i18n._('Choose a baud rate')}
-                        searchable={false}
-                        value={baudrate}
-                        valueRenderer={this.renderBaudrateValue}
-                    />
-                </div>
-                <div
-                    className={cx('checkbox', {
-                        'disabled': !canToggleHardwareFlowControl
-                    })}
-                >
-                    <label>
-                        <input
-                            type="checkbox"
-                            defaultChecked={enableHardwareFlowControl}
-                            onChange={actions.toggleHardwareFlowControl}
-                            disabled={!canToggleHardwareFlowControl}
-                        />
-                        {i18n._('Enable hardware flow control')}
-                    </label>
-                </div>
-                <div className="checkbox">
-                    <label>
-                        <input
-                            type="checkbox"
-                            defaultChecked={autoReconnect}
-                            onChange={actions.toggleAutoReconnect}
-                        />
-                        {i18n._('Connect automatically')}
-                    </label>
+                    <label className="control-label">{i18n._('Baud rate')}: </label>
+                    <label className="control-label">{baudrate}</label>
                 </div>
                 <div className="btn-group btn-group-sm">
                     {notConnected && (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            disabled={!canOpenPort}
-                            onClick={actions.handleOpenPort}
-                        >
-                            <i className="fa fa-toggle-off" />
-                            <Space width="8" />
-                            {i18n._('Open')}
-                        </button>
+                        <label className="control-label">Not connected</label>
                     )}
                     {connected && (
-                        <button
-                            type="button"
-                            className="btn btn-danger"
-                            disabled={!canClosePort}
-                            onClick={actions.handleClosePort}
-                        >
-                            <i className="fa fa-toggle-on" />
-                            <Space width="8" />
-                            {i18n._('Close')}
-                        </button>
+                        <label className="control-label">Connected to the CNC controller</label>
                     )}
                 </div>
             </div>

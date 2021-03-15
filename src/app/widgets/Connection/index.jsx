@@ -125,7 +125,7 @@ class ConnectionWidget extends PureComponent {
                 const { hasReconnected } = this.state;
 
                 if (!hasReconnected) {
-                    const { baudrate } = this.state;
+                    const { baudrate } = 115200; // this.state;
 
                     this.setState(state => ({
                         hasReconnected: true
