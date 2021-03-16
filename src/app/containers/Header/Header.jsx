@@ -18,6 +18,8 @@ import store from 'app/store';
 import QuickAccessToolbar from './QuickAccessToolbar';
 import styles from './index.styl';
 
+const GRBL = 'Grbl';
+
 const releases = 'https://github.com/cncjs/cncjs/releases';
 
 const newUpdateAvailableTooltip = () => {
@@ -176,6 +178,73 @@ class Header extends PureComponent {
                     }
                 });
             }
+        },
+        'serialport:list': (ports) => {
+            log.debug('Received a list of serial ports:', ports);
+            console.log('list received');
+            this.stopLoading();
+
+            const arduinoPort = ports.filter(obj => {
+                return obj.manufacturer.indexOf('Arduino') > -1;
+            });
+
+            const port = (arduinoPort.length ? arduinoPort[0].port : '');
+
+            if (arduinoPort) {
+                const { hasReconnected, baudrate } = this.state;
+                this.setState(state => ({
+                    alertMessage: '',
+                    port: port,
+                    baudrate: baudrate
+                }));
+
+                if (!hasReconnected) {
+                    this.setState(state => ({
+                        hasReconnected: true
+                    }));
+                    this.openPort(port, {
+                        baudrate: baudrate
+                    });
+                }
+            } else {
+                this.setState(state => ({
+                    alertMessage: ''
+                }));
+            }
+        },
+        'serialport:open': () => {
+            const { port } = this.state;
+            this.setState(state => ({
+                alertMessage: '',
+                connecting: false,
+                connected: true
+            }));
+
+            log.debug(`Established a connection to the serial port "${port}"`);
+        },
+        'serialport:close': () => {
+            const { port } = this.state;
+
+            log.debug(`The serial port "${port}" is disconected`);
+
+            this.setState(state => ({
+                alertMessage: '',
+                connecting: false,
+                connected: false
+            }));
+
+            this.refreshPorts();
+        },
+        'serialport:error': () => {
+            const { port } = this.state;
+
+            this.setState(state => ({
+                alertMessage: i18n._('Error opening serial port \'{{- port}}\'', { port: port }),
+                connecting: false,
+                connected: false
+            }));
+
+            log.error(`Error opening serial port "${port}"`);
         }
     };
 
@@ -195,7 +264,20 @@ class Header extends PureComponent {
             commands: [],
             runningTasks: [],
             currentVersion: settings.version,
-            latestVersion: settings.version
+            latestVersion: settings.version,
+            connecting: false,
+            connected: false,
+            port: controller.port,
+            baudrate: 115200,
+            controllerType: GRBL,
+            connection: {
+                serial: {
+                    rtscts: false
+                }
+            },
+            autoReconnect: true,
+            hasReconnected: false,
+            alertMessage: ''
         };
     }
 
@@ -208,6 +290,8 @@ class Header extends PureComponent {
         // Initial actions
         this.actions.checkForUpdates();
         this.actions.fetchCommands();
+        this.startLoading();
+        controller.listPorts();
     }
 
     componentWillUnmount() {
@@ -247,9 +331,81 @@ class Header extends PureComponent {
         });
     }
 
+    openPort(port, options) {
+        const { baudrate } = { ...options };
+
+        this.setState(state => ({
+            connecting: true
+        }));
+
+        controller.openPort(port, {
+            controllerType: this.state.controllerType,
+            baudrate: baudrate,
+            rtscts: false
+        }, (err) => {
+            if (err) {
+                this.setState(state => ({
+                    alertMessage: i18n._('Error opening serial port \'{{- port}}\'', { port: port }),
+                    connecting: false,
+                    connected: false
+                }));
+
+                log.error(err);
+                return;
+            }
+        });
+    }
+
+    closePort(port = this.state.port) {
+        this.setState(state => ({
+            connecting: false,
+            connected: false
+        }));
+        controller.closePort(port, (err) => {
+            if (err) {
+                log.error(err);
+                return;
+            }
+
+            // Refresh ports
+            controller.listPorts();
+        });
+    }
+
+    startLoading() {
+        const delay = 5 * 1000; // wait for 5 seconds
+
+        this.setState(state => ({
+            loading: true
+        }));
+        this._loadingTimer = setTimeout(() => {
+            this.setState(state => ({
+                loading: false
+            }));
+        }, delay);
+    }
+
+    stopLoading() {
+        if (this._loadingTimer) {
+            clearTimeout(this._loadingTimer);
+            this._loadingTimer = null;
+        }
+        this.setState(state => ({
+            loading: false
+        }));
+    }
+
     render() {
         const { history, location } = this.props;
-        const { pushPermission, commands, runningTasks, currentVersion, latestVersion } = this.state;
+        const {
+            pushPermission,
+            commands,
+            runningTasks,
+            currentVersion,
+            latestVersion,
+            connected
+        } = this.state;
+        const notConnected = !connected;
         const newUpdateAvailable = semver.lt(currentVersion, latestVersion);
         const tooltip = newUpdateAvailable ? newUpdateAvailableTooltip() : <div />;
         const sessionEnabled = store.get('session.enabled');
@@ -317,6 +473,12 @@ class Header extends PureComponent {
                     </OverlayTrigger>
                     <Navbar.Toggle />
                 </Navbar.Header>
+                {notConnected && (
+                    <Navbar.Brand href="#home">Not connected to the CNC controller</Navbar.Brand>
+                )}
+                {connected && (
+                    <Navbar.Brand href="#home">Connected to the CNC controller</Navbar.Brand>
+                )}
                 <Navbar.Collapse>
                     <Nav pullRight>
                         <NavDropdown

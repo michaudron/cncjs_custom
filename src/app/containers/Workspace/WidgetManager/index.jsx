@@ -21,6 +21,11 @@ export const getActiveWidgets = () => {
             if (widget === 'grbl' && !includes(controller.loadedControllers, GRBL)) {
                 return false;
             }
+            // if (widget === 'connection') {
+            //     console.log('dont load connection');
+            //     return false;
+            // }
+
             return true;
         });
 
