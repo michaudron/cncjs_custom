@@ -57,7 +57,25 @@ const renderPage = (view = 'index', cb = _noop) => (req, res, next) => {
 
 const appMain = () => {
     const app = express();
-
+    /** debugging only use the following to find where the request  is being calledand getting the ERR_HTTP_HEADERS_SENT message */
+    /*
+    app.use((req, res, next) => {
+        const render = res.render;
+        const send = res.send;
+        res.render = function renderWrapper(...args) {
+            Error.captureStackTrace(this);
+            return render.apply(this, args);
+        };
+        res.send = function sendWrapper(...args) {
+            try {
+                send.apply(this, args);
+            } catch (err) {
+                console.error(`Error in res.send | ${err.code} | ${err.message} | ${res.stack}`);
+            }
+        };
+        next();
+    });
+    */
     { // Settings
         if (process.env.NODE_ENV === 'development') {
             const webpackDevServer = require('./webpack-dev-server').default;

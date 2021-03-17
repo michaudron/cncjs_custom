@@ -30,7 +30,7 @@ class Switches extends PureComponent {
 
     render() {
         const { state } = this.props;
-        console.log(state);
+
         return (
             <div>
                 <div>

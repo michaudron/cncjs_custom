@@ -74,8 +74,8 @@ class SwitchesWidget extends PureComponent {
             }
         },
         getRelayStatus: () => {
-            console.log('Get relay status');
-            controller.getRelayStatus();
+            // TODO - get back to fixing this need to deal with the rlays and change them to PI communication
+            // controller.getRelayStatus();
         }
     };
 
@@ -201,7 +201,7 @@ class SwitchesWidget extends PureComponent {
         const switchStates = data.split(',');
         const self = this;
         let tmpSwitches = self.state.switches.switch;
-        console.log(switchStates, data);
+
         for (let i = 0; i < switchStates.length; i++) {
             tmpSwitches[i].state = switchStates[i] === 'ON';
         }

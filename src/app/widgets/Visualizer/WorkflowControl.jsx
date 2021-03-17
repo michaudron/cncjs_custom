@@ -12,14 +12,6 @@ import {
     // Grbl
     GRBL,
     GRBL_ACTIVE_STATE_ALARM,
-    // Marlin
-    MARLIN,
-    // Smoothie
-    SMOOTHIE,
-    SMOOTHIE_ACTIVE_STATE_ALARM,
-    // TinyG
-    TINYG,
-    TINYG_MACHINE_STATE_ALARM,
     // Workflow
     WORKFLOW_STATE_IDLE,
     WORKFLOW_STATE_PAUSED,
@@ -101,27 +93,6 @@ class WorkflowControl extends PureComponent {
                 GRBL_ACTIVE_STATE_ALARM
             ];
             if (includes(states, activeState)) {
-                return false;
-            }
-        }
-        if (controllerType === MARLIN) {
-            // Marlin does not have machine state
-        }
-        if (controllerType === SMOOTHIE) {
-            const activeState = get(controllerState, 'status.activeState');
-            const states = [
-                SMOOTHIE_ACTIVE_STATE_ALARM
-            ];
-            if (includes(states, activeState)) {
-                return false;
-            }
-        }
-        if (controllerType === TINYG) {
-            const machineState = get(controllerState, 'sr.machineState');
-            const states = [
-                TINYG_MACHINE_STATE_ALARM
-            ];
-            if (includes(states, machineState)) {
                 return false;
             }
         }

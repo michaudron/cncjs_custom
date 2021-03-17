@@ -21,23 +21,25 @@ const errnotfound = (options) => {
     let view = options.view || '404',
         error = options.error || '';
 
-    return (req, res, next) => {
-        res.status(404);
+    return (req, res) => {
+        try {
+            // respond with html page
+            if (req.accepts('html')) {
+                res.status(404).render(view, { url: req.url });
+                return;
+            }
 
-        // respond with html page
-        if (req.accepts('html')) {
-            res.render(view, { url: req.url });
-            return;
+            // respond with json
+            if (req.accepts('json')) {
+                res.status(404).send({ error: error });
+                return;
+            }
+
+            // default to plain-text. send()
+            res.status(404).type('txt').send(error);
+        } catch (e) {
+            console.log('eernotfound: ' + e.message);
         }
-
-        // respond with json
-        if (req.accepts('json')) {
-            res.send({ error: error });
-            return;
-        }
-
-        // default to plain-text. send()
-        res.type('txt').send(error);
     };
 };
 

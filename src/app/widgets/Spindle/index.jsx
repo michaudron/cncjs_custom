@@ -14,18 +14,6 @@ import {
     GRBL,
     GRBL_ACTIVE_STATE_IDLE,
     GRBL_ACTIVE_STATE_HOLD,
-    // Marlin
-    MARLIN,
-    // Smoothie
-    SMOOTHIE,
-    SMOOTHIE_ACTIVE_STATE_IDLE,
-    SMOOTHIE_ACTIVE_STATE_HOLD,
-    // TinyG
-    TINYG,
-    TINYG_MACHINE_STATE_READY,
-    TINYG_MACHINE_STATE_STOP,
-    TINYG_MACHINE_STATE_END,
-    TINYG_MACHINE_STATE_HOLD,
     // Workflow
     WORKFLOW_STATE_RUNNING,
 } from '../../constants';
@@ -91,56 +79,6 @@ class SpindleWidget extends PureComponent {
             if (type === GRBL) {
                 const { parserstate } = { ...state };
                 const { modal = {} } = { ...parserstate };
-
-                this.setState({
-                    controller: {
-                        type: type,
-                        state: state,
-                        modal: {
-                            spindle: modal.spindle || '',
-                            coolant: modal.coolant || ''
-                        }
-                    }
-                });
-            }
-
-            // Marlin
-            if (type === MARLIN) {
-                const { modal = {} } = { ...state };
-
-                this.setState({
-                    controller: {
-                        type: type,
-                        state: state,
-                        modal: {
-                            spindle: modal.spindle || '',
-                            coolant: modal.coolant || ''
-                        }
-                    }
-                });
-            }
-
-            // Smoothie
-            if (type === SMOOTHIE) {
-                const { parserstate } = { ...state };
-                const { modal = {} } = { ...parserstate };
-
-                this.setState({
-                    controller: {
-                        type: type,
-                        state: state,
-                        modal: {
-                            spindle: modal.spindle || '',
-                            coolant: modal.coolant || ''
-                        }
-                    }
-                });
-            }
-
-            // TinyG
-            if (type === TINYG) {
-                const { sr } = { ...state };
-                const { modal = {} } = { ...sr };
 
                 this.setState({
                     controller: {
@@ -220,7 +158,7 @@ class SpindleWidget extends PureComponent {
         if (workflow.state === WORKFLOW_STATE_RUNNING) {
             return false;
         }
-        if (!includes([GRBL, MARLIN, SMOOTHIE, TINYG], controllerType)) {
+        if (!includes([GRBL], controllerType)) {
             return false;
         }
         if (controllerType === GRBL) {
@@ -230,31 +168,6 @@ class SpindleWidget extends PureComponent {
                 GRBL_ACTIVE_STATE_HOLD
             ];
             if (!includes(states, activeState)) {
-                return false;
-            }
-        }
-        if (controllerType === MARLIN) {
-            // Marlin does not have machine state
-        }
-        if (controllerType === SMOOTHIE) {
-            const activeState = get(controllerState, 'status.activeState');
-            const states = [
-                SMOOTHIE_ACTIVE_STATE_IDLE,
-                SMOOTHIE_ACTIVE_STATE_HOLD
-            ];
-            if (!includes(states, activeState)) {
-                return false;
-            }
-        }
-        if (controllerType === TINYG) {
-            const machineState = get(controllerState, 'sr.machineState');
-            const states = [
-                TINYG_MACHINE_STATE_READY,
-                TINYG_MACHINE_STATE_STOP,
-                TINYG_MACHINE_STATE_END,
-                TINYG_MACHINE_STATE_HOLD
-            ];
-            if (!includes(states, machineState)) {
                 return false;
             }
         }

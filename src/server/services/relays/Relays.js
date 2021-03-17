@@ -20,7 +20,10 @@ class Relay {
                 });
 
                 this.io.on('connect_error', (error) => {
-                    log.error(error);
+                    /** This will continue to retry on time out. Bring the service up to stop this error */
+                    if (error !== 'timeout') {
+                        log.error(error);
+                    }
                 });
 
                 this.io.on('relay:response', (data) => {

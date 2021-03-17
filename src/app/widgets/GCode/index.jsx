@@ -12,9 +12,6 @@ import WidgetConfig from '../WidgetConfig';
 import GCode from './GCode';
 import {
     GRBL,
-    MARLIN,
-    SMOOTHIE,
-    TINYG,
     // Units
     IMPERIAL_UNITS,
     METRIC_UNITS
@@ -104,47 +101,6 @@ class GCodeWidget extends PureComponent {
             if (type === GRBL) {
                 const { parserstate } = { ...state };
                 const { modal = {} } = { ...parserstate };
-                const units = {
-                    'G20': IMPERIAL_UNITS,
-                    'G21': METRIC_UNITS
-                }[modal.units] || this.state.units;
-
-                if (this.state.units !== units) {
-                    this.setState({ units: units });
-                }
-            }
-
-            // Marlin
-            if (type === MARLIN) {
-                const { modal = {} } = { ...state };
-                const units = {
-                    'G20': IMPERIAL_UNITS,
-                    'G21': METRIC_UNITS
-                }[modal.units] || this.state.units;
-
-                if (this.state.units !== units) {
-                    this.setState({ units: units });
-                }
-            }
-
-            // Smoothie
-            if (type === SMOOTHIE) {
-                const { parserstate } = { ...state };
-                const { modal = {} } = { ...parserstate };
-                const units = {
-                    'G20': IMPERIAL_UNITS,
-                    'G21': METRIC_UNITS
-                }[modal.units] || this.state.units;
-
-                if (this.state.units !== units) {
-                    this.setState({ units: units });
-                }
-            }
-
-            // TinyG
-            if (type === TINYG) {
-                const { sr } = { ...state };
-                const { modal = {} } = { ...sr };
                 const units = {
                     'G20': IMPERIAL_UNITS,
                     'G21': METRIC_UNITS

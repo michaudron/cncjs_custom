@@ -12,13 +12,7 @@ import WidgetConfig from '../WidgetConfig';
 import Laser from './Laser';
 import {
     // Grbl
-    GRBL,
-    // Marlin
-    MARLIN,
-    // Smoothie
-    SMOOTHIE,
-    // TinyG
-    TINYG
+    GRBL
 } from '../../constants';
 import styles from './index.styl';
 
@@ -224,7 +218,7 @@ class LaserWidget extends PureComponent {
         if (!port) {
             return false;
         }
-        if (!includes([GRBL, MARLIN, SMOOTHIE, TINYG], controllerType)) {
+        if (!includes([GRBL], controllerType)) {
             return false;
         }
         if (!(isNumber(test.power) && isNumber(test.duration) && isNumber(test.maxS))) {
