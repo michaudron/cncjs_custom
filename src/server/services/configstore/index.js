@@ -25,6 +25,7 @@ class ConfigStore extends events.EventEmitter {
     // @param {string} file The path to a filename.
     // @return {object} The config object.
     load(file) {
+        log.debug('Config store load:', file);
         this.file = file;
         this.reload();
         this.emit('load', this.config); // emit load event

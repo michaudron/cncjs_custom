@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const Switch = (props) => {
+const Holders = (props) => {
     const { title, value } = props;
 
     return (
@@ -27,15 +27,15 @@ const Switch = (props) => {
                     minWidth: 16
                 }}
             >
-                {value ? 'ON' : 'OFF'}
+                {value}
             </span>
         </div>
     );
 };
 
-Switch.propTypes = {
+Holders.propTypes = {
     title: PropTypes.string,
-    value: PropTypes.bool
+    value: PropTypes.string
 };
 
-export default Switch;
+export default Holders;

@@ -11,7 +11,7 @@ import SpindleWidget from 'app/widgets/Spindle';
 import CustomWidget from 'app/widgets/Custom';
 import VisualizerWidget from 'app/widgets/Visualizer';
 import WebcamWidget from 'app/widgets/Webcam';
-import SwitchesWidget from 'app/widgets/Switches';
+import ToolChangeWidget from 'app/widgets/ToolChange';
 
 const getWidgetByName = (name) => {
     return {
@@ -26,7 +26,7 @@ const getWidgetByName = (name) => {
         'custom': CustomWidget,
         'visualizer': VisualizerWidget,
         'webcam': WebcamWidget,
-        'switches': SwitchesWidget
+        'toolchange': ToolChangeWidget
     }[name] || null;
 };
 

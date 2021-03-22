@@ -22,7 +22,7 @@ export default {
         host: 'localhost',
         port: 80,
         route: 'api/',
-        relayWS: 'http://localhost:3000'
+        toolChangeWs: 'http://localhost:3001'
     },
     cluster: {
         // note. node-inspector cannot debug child (forked) process

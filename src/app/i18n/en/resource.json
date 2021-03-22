@@ -134,8 +134,6 @@
     "This widget gives you a communication interface for creating your own widget.": "This widget gives you a communication interface for creating your own widget.",
     "Webcam Widget": "Webcam Widget",
     "This widget lets you monitor a webcam.": "This widget lets you monitor a webcam.",
-    "Switch Widget": "Switch Widget",
-    "This widget allows you to monitor and control switches attached to the relays": "This widget allows you to monitor and control switches attached to the relays",
     "Widgets": "Widgets",
     "M0 Program Pause": "M0 Program Pause",
     "M1 Program Pause": "M1 Program Pause",
@@ -494,5 +492,7 @@
     "The URL must be for a Motion JPEG (mjpeg) HTTP or RTSP stream.": "The URL must be for a Motion JPEG (mjpeg) HTTP or RTSP stream.",
     "Tool Base": "Tool Base",
     "Tool Slots": "Tool Slots",
-    "Probe Location": "Probe Location"
+    "Probe Location": "Probe Location",
+    "Tool Change Widget": "Tool Change Widget",
+    "This widget allows you to monitor and control tool holders and relays": "This widget allows you to monitor and control tool holders and relays"
 }

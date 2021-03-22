@@ -34,12 +34,14 @@ import {
     GRBL_ERRORS,
     GRBL_SETTINGS
 } from './constants';
-import relays from '../../services/relays';
+import toolChange from '../../services/toolchange';
 
 // % commands
 const WAIT = '%wait';
 const RESUME = '%resume';
 const MACRO = '%macro';
+const RELEASE_TOOL = '%releaseTool';
+const GRAB_TOOL = '%grabTool';
 const log = logger('controller:Grbl');
 const noop = _.noop;
 
@@ -134,7 +136,7 @@ class GrblController {
             throw new Error('engine must be specified');
         }
         this.engine = engine;
-        relays.init(this, engine);
+        toolChange.init(this, engine);
 
         const { port, baudrate, rtscts } = { ...options };
         this.options = {
@@ -174,32 +176,6 @@ class GrblController {
                     }
                 }
 
-                // %resume
-                if (line === RESUME) {
-                    log.debug('Resume from feeder');
-                    this.workflow.resume();
-                    return `(${line})`;
-                }
-
-                if (line.indexOf('M90') > -1 || line.indexOf('M91') > -1) {
-                    let idx = line.substring(3);
-                    if (line.indexOf('M90') > -1) {
-                        log.debug('writeFilter turn relay off: ' + idx);
-                        relays.emit('relay:off', idx);
-                    } else {
-                        log.debug('writeFilter turn relay on: ' + idx);
-                        relays.emit('relay:on', idx);
-                    }
-                    return `;${line}`;
-                }
-                // M6 Tool Change
-                if (line.indexOf('M6') > -1) {
-                    log.debug('writeFilyter M6 Tool Change');
-                    // this.feeder.hold({ data: line }); // Hold reason
-                    //this.emit('toolchange', line);
-                    return `;${line}`;
-                }
-
                 if (line.indexOf(MACRO) > -1) {
                     log.debug(`Run Macro macro: ${line} `);
                     this.emit('macro:auto', line);
@@ -234,6 +210,24 @@ class GrblController {
                         return 'G4 P0.5'; // dwell
                     }
 
+                    // %resume
+                    if (line === RESUME) {
+                        log.debug('Resume from feeder');
+                        this.workflow.resume();
+                        return `(${line})`;
+                    }
+
+                    if (line === RELEASE_TOOL) {
+                        log.debug('Release tool from spindle');
+                        toolChange.emit('toolchange:release_on');
+                        return `(${line})`;
+                    }
+
+                    if (line === GRAB_TOOL) {
+                        log.debug('Grab tool from holder');
+                        toolChange.emit('toolchange:release_off');
+                        return `(${line})`;
+                    }
                     // Expression
                     // %_x=posx,_y=posy,_z=posz
                     evaluateAssignmentExpression(line.slice(1), context);
@@ -257,23 +251,10 @@ class GrblController {
                     }
                 }
 
-                if (line.indexOf('M90') > -1 || line.indexOf('M91') > -1) {
-                    let idx = line.substring(3);
-                    if (line.indexOf('M90') > -1) {
-                        log.debug('writeFilter turn relay off: ' + idx);
-                        relays.emit('relay:off', idx);
-                    } else {
-                        log.debug('writeFilter turn relay on: ' + idx);
-                        relays.emit('relay:on', idx);
-                    }
-                    return `(${line})`;
-                }
-
                 // M6 Tool Change
                 if (_.includes(words, 'M6')) {
-                    log.debug('M6 Tool Change');
+                    log.debug('Feeeder - M6 Tool Change');
                     this.feeder.hold({ data: line }); // Hold reason
-                    this.emit('toolchange', line);
                     return `(${line})`;
                 }
 
@@ -350,23 +331,14 @@ class GrblController {
                     }
                 }
 
-                if (line.indexOf('M90') > -1 || line.indexOf('M91') > -1) {
-                    let idx = line.substring(3);
-                    if (line.indexOf('M90') > -1) {
-                        log.debug('writeFilter turn relay off: ' + idx);
-                        relays.emit('relay:off', idx);
-                    } else {
-                        log.debug('writeFilter turn relay on: ' + idx);
-                        relays.emit('relay:on', idx);
-                    }
-                    return `(${line})`;
-                }
-
                 // M6 Tool Change
                 if (_.includes(words, 'M6')) {
                     log.debug(`sender - M6 Tool Change: line=${sent + 1}, sent=${sent}, received=${received}`);
                     this.workflow.pause({ data: line });
-                    this.emit('toolchange', line);
+                    let tool = line.replace('M6', '');
+                    let macro = toolChange.returnToolChangeMacro(tool);
+                    this.command('gcode', macro, context);
+                    // this.emit('toolchange', tool);
                     log.debug(`sender - toolchange: ${line}`);
                     // Surround M6 with parentheses to ignore unsupported command error
                     return `(${line})`;
@@ -846,7 +818,7 @@ class GrblController {
             // Tool
             tool: Number(tool) || 0,
 
-            relays: relays.status,
+            toolChangeStatus: toolChange.status,
 
             // Global objects
             ...globalObjects,
@@ -897,8 +869,8 @@ class GrblController {
             this.workflow = null;
         }
 
-        if (relays) {
-            relays.stop();
+        if (toolChange) {
+            toolChange.stop();
         }
     }
 
@@ -916,7 +888,7 @@ class GrblController {
             },
             feeder: this.feeder.toJSON(),
             sender: this.sender.toJSON(),
-            relays: relays.toJson(),
+            toolChange: toolChange.toJson(),
             workflow: {
                 state: this.workflow.state
             }
@@ -1068,8 +1040,8 @@ class GrblController {
             // workflow state
             socket.emit('workflow:state', this.workflow.state);
         }
-        socket.on('relay:status', () => {
-            relays.emit('relay:status');
+        socket.on('toolchange:status', () => {
+            toolChange.emit('toolchange:status');
         });
     }
 
@@ -1392,13 +1364,16 @@ class GrblController {
                     this.command('gcode:load', file, data, context, callback);
                 });
             },
-            'relay:on': (data) => {
-                log.debug('Command relay on', data);
-                relays.emit('relay:on', data);
+            'toolchange:release_on': (data) => {
+                log.debug('Command toolchange:release_on', data);
+                toolChange.emit('toolchange:release_on', data);
             },
-            'relay:off': (data) => {
-                log.debug('Command relay off', data);
-                relays.emit('relay:off', data);
+            'toolchange:release_off': (data) => {
+                log.debug('Command toolchange:release_off', data);
+                toolChange.emit('toolchange:release_off', data);
+            },
+            'toolchange': (data) => {
+                log.debug('Toolchange', data);
             }
         }[cmd];
 
