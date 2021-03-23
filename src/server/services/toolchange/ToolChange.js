@@ -10,6 +10,8 @@ const log = logger('service:toolchange');
 class ToolChange {
     io = null;
 
+    currentToolInSpindle = null;
+
     currentState = null;
 
     controller = null;
@@ -88,116 +90,174 @@ class ToolChange {
         }
     }
 
+    macroPutTool(toolBase, slotX) {
+        return `
+            ; Absolute positioning
+            G90
+
+            ; Raise to tool change Z
+            G53 Z${toolBase.zsafe}
+            ; Go to tool change X,Y
+            G53 X${slotX} Y${toolBase.ysafe}
+
+            ; Wait until the planner queue is empty
+            %wait
+            G53 Z${toolBase.zpos}
+            %wait
+            G53 Y${toolBase.ypos}
+            %wait
+            G4 P2
+            %releaseTool
+            ; Go to Clearance Height
+            G53 Z${toolBase.zsafe}
+            %wait
+            G4 P2
+            %grabTool
+        `;
+    }
+
+    macroGetTool(toolBase, slotX) {
+        return `
+            ; Get te new tool
+            G90
+
+            ; Raise to tool change Z
+            G53 Z${toolBase.zsafe}
+            ; Go to tool change X,Y
+            G53 X${slotX} Y${toolBase.ypos}
+
+            ; Wait until the planner queue is empty
+            %wait
+            %releaseTool
+            ;wait 2 seconds
+            G4 P2
+            G53 Z${toolBase.zpos}
+            %wait
+            G4 P2
+            %grabTool
+            G4 P2
+            G53 Y${toolBase.ysafe}
+            %wait
+            ; Go to Clearance Height
+            G53 Z${toolBase.zsafe}
+            %wait
+        `;
+    }
+
+    macroDoProbe(probe, originalOffset) {
+        const PROBE_FEEDRATE = 20;
+        return `
+            ; Go to Clearance Height
+            G53 Z${probe.zsafe}
+            %wait
+            ; Go to tool probe X,Y
+            G53 X${probe.xpos} Y${probe.ypos}
+            ; Wait until the planner queue is empty
+            %wait
+
+            ; Cancel tool length offset
+            G49
+
+            ; Probe toward workpiece with a maximum probe distance
+            G91
+            G38.2 Z${probe.distance} F${PROBE_FEEDRATE}
+            G90
+            ; A dwell time of one second to make sure the planner queue is empty
+            G4 P1
+
+            ; Update the tool length offset
+            G43.1 Z[posz - ${originalOffset}]
+    
+            ; Retract from the touch plate
+            G91 ; Relative positioning
+            G0 Z${probe.zsafe}
+            G90 ; Absolute positioning
+    
+        `;
+    }
+
+    macroSetup() {
+        return `
+            ; Wait until the planner queue is empty
+            %wait
+
+            ; Keep a backup of current work position
+            %X0=posx, Y0=posy, Z0=posz
+            %WCS = modal.wcs
+            %PLANE = modal.plane
+            %UNITS = modal.units
+            %DISTANCE = modal.distance
+            %FEEDRATE = modal.feedrate
+            %SPINDLE = modal.spindle
+            %COOLANT = modal.coolant
+
+            ; Stop spindle
+            M5
+            ; wiat 5 seconds for the spindle to  stop
+            G4 P5
+
+            ; Absolute positioning
+            G90
+        `;
+    }
+
+    macroReturnOriginalPosition() {
+        return `
+            ; Go to previous work position
+            G0 X[X0] Y[Y0]
+            G0 Z[Z0]
+            ; Restore modal state
+            [WCS] [PLANE] [UNITS] [DISTANCE] [FEEDRATE] [SPINDLE] [COOLANT]
+            %resume
+        `;
+    }
+
     returnToolChangeMacro(tool) {
-        // TODO: Get currnt slected machine
+        if (!tool.trim().length && !this.currentToolInSpindle) {
+            log.debug(`No tool ${tool.trim()}`);
+            return `M0 (No tool)
+            $X
+            `;
+        }
+        const slotName = tool.trim().toLowerCase().replace('t', 'slot');
+        if (this.currentToolInSpindle === slotName) {
+            log.debug(`Tool already in spindle ${tool.trim()}`);
+            return '%resume';
+        }
+        // TODO: Get current slected machine from UI
         const machine = _find(config.get('machines'), { name: 'Cue Machine' });
         const toolBase = machine.toolBase;
-        const probe = machine.probeLocation;
-        const slotName = tool.trim().toLowerCase().replace('t', 'slot');
-        log.debug(machine);
-        const slotX = machine.toolSlots[slotName];
-        // { zpos: -10, xpos: -10, ypos: -57, ysafe: -40, zsafe: -10 } { zsafe: -10, xpos: -10, ypos: -57 }
-        log.debug(toolBase, probe, slotName, slotX);
-        let macroData = `; Wait until the planner queue is empty
-        %wait
+        // const probe = machine.probeLocation;
+        let macroData = this.macroSetup();
 
-        ; Set user-defined variables
-        %CLEARANCE_HEIGHT = 100
-        %TOOL_CHANGE_X = ${slotX}
-        %TOOL_CHANGE_Y = ${toolBase.ypos - toolBase.ysafe}
-        %TOOL_CHANGE_Z = ${toolBase.zpos}
-        %TOOL_PROBE_X = ${probe.xpos}
-        %TOOL_PROBE_Y = ${probe.ypos}
-        %TOOL_PROBE_Z = ${probe.zsafe}
-        %PROBE_DISTANCE = 15
-        %PROBE_FEEDRATE = 20
-        %TOUCH_PLATE_HEIGHT = 10
-        %RETRACTION_DISTANCE = 10
+        if (this.currentToolInSpindle) {
+            const toolIndex = parseInt(this.currentToolInSpindle.replace('slot', ''), 2);
+            if (this.state.toolholders[toolIndex - 1].state !== 'Open') {
+                log.debug(`Tool slot occupied ${this.currentToolInSpindle}`);
+                return `M0 (Tool slot ${toolIndex} not open)
+                $X
+                `;
+            }
+            macroData += this.macroPutTool(toolBase, machine.toolSlots[this.currentToolInSpindle]);
+            this.currentToolInSpindle = null;
+        }
 
-        ; Keep a backup of current work position
-        %X0=posx, Y0=posy, Z0=posz
+        if (tool) {
+            const slotX = machine.toolSlots[slotName];
+            const toolIndex = parseInt(slotName.replace('slot', ''), 2);
+            log.debug(`Tool index ${toolIndex}`);
+            if (this.state.toolholders[toolIndex - 1].state === 'Open') {
+                log.debug(`Tool slot empty ${tool.trim()}`);
+                return `M0 (No tool in slot ${toolIndex})
+                $X
+                `;
+            }
+            macroData += this.macroGetTool(toolBase, slotX);
+            this.currentToolInSpindle = slotName;
+        }
 
-        ; Save modal state
-        ; * Work Coordinate System: G54, G55, G56, G57, G58, G59
-        ; * Plane: G17, G18, G19
-        ; * Units: G20, G21
-        ; * Distance Mode: G90, G91
-        ; * Feed Rate Mode: G93, G94
-        ; * Spindle State: M3, M4, M5
-        ; * Coolant State: M7, M8, M9
-        %WCS = modal.wcs
-        %PLANE = modal.plane
-        %UNITS = modal.units
-        %DISTANCE = modal.distance
-        %FEEDRATE = modal.feedrate
-        %SPINDLE = modal.spindle
-        %COOLANT = modal.coolant
+        macroData += this.macroReturnOriginalPosition();
 
-        ; Stop spindle
-        M5
-        ; Absolute positioning
-        G90
-
-        ; Raise to tool change Z
-        G53 Z${toolBase.zsafe}
-        ; Go to tool change X,Y
-        G53 X${slotX} Y${toolBase.ysafe}
-
-        ; Wait until the planner queue is empty
-        %wait
-        G53 Z${toolBase.zpos}
-        %wait
-        G53 Y${toolBase.ypos}
-        %wait
-        %releaseTool
-    
-        ; Go to Clearance Height
-        G53 Z[CLEARANCE_HEIGHT]
-        ; Go to tool probe X,Y
-        G53 X[TOOL_PROBE_X] Y[TOOL_PROBE_Y]
-        ; Go to tool probe Z
-        G53 Z[TOOL_PROBE_Z]
-
-        ; Wait until the planner queue is empty
-        %wait
-
-        ; Pause the program before probing
-        M1
-
-        ; Cancel tool length offset
-        G49
-
-        ; Probe toward workpiece with a maximum probe distance
-        G91 ; Relative positioning
-        G38.2 Z-[PROBE_DISTANCE] F[PROBE_FEEDRATE]
-        G90 ; Absolute positioning
-
-        ; A dwell time of one second to make sure the planner queue is empty
-        G4 P1
-
-        ; Update the tool length offset
-        G43.1 Z[posz - TOUCH_PLATE_HEIGHT]
-
-        ; Retract from the touch plate
-        G91 ; Relative positioning
-        G0 Z[RETRACTION_DISTANCE]
-        G90 ; Absolute positioning
-
-        ; Raise to tool change Z
-        G53 Z[TOOL_CHANGE_Z]
-        ; Go to tool change X,Y
-        G53 X[TOOL_CHANGE_X] Y[TOOL_CHANGE_Y]
-
-        ; Wait until the planner queue is empty
-        %wait
-
-        ; Go to previous work position
-        G0 X[X0] Y[Y0]
-        G0 Z[Z0]
-        %grabTool
-        ; Restore modal state
-        [WCS] [PLANE] [UNITS] [DISTANCE] [FEEDRATE] [SPINDLE] [COOLANT]
-        `;
         return macroData;
     }
 

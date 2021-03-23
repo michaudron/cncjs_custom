@@ -54,7 +54,8 @@ class UpdateRecord extends Component {
             probeLocation: {
                 zsafe: Number(_get(values, 'probeLocation.zsafe')) || 0,
                 xpos: Number(_get(values, 'probeLocation.xpos')) || 0,
-                ypos: Number(_get(values, 'probeLocation.ypos')) || 0
+                ypos: Number(_get(values, 'probeLocation.ypos')) || 0,
+                distance: Number(_get(values, 'probeLocation.distance')) || 0
             }
         };
     }
@@ -357,6 +358,18 @@ class UpdateRecord extends Component {
                         {({ input, meta }) => (
                             <FormGroup>
                                 <label><Axis value="Z" sub="Safe" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="probeLocation.distance">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Distance" sub="" /></label>
                                 <Input {...input} type="number" />
                                 {meta.touched && meta.error && <Error>{meta.error}</Error>}
                             </FormGroup>

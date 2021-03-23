@@ -34,6 +34,29 @@ class CreateRecord extends Component {
                     ymax: 0,
                     zmin: 0,
                     zmax: 0,
+                },
+                toolBase: {
+                    zpos: 0,
+                    xpos: 0,
+                    ypos: 0,
+                    ysafe: 0,
+                    zsafe: 0
+                },
+                toolSlots: {
+                    slot1: 0,
+                    slot2: 0,
+                    slot3: 0,
+                    slot4: 0,
+                    slot5: 0,
+                    slot6: 0,
+                    slot7: 0,
+                    slot8: 0
+                },
+                probeLocation: {
+                    zsafe: 0,
+                    xpos: 0,
+                    ypos: 0,
+                    distance: 0
                 }
             }
         };
@@ -51,6 +74,29 @@ class CreateRecord extends Component {
                 ymax: Number(_get(values, 'limits.ymax')) || 0,
                 zmin: Number(_get(values, 'limits.zmin')) || 0,
                 zmax: Number(_get(values, 'limits.zmax')) || 0,
+            },
+            toolBase: {
+                zpos: Number(_get(values, 'toolBase.zpos')) || 0,
+                xpos: Number(_get(values, 'toolBase.xpos')) || 0,
+                ypos: Number(_get(values, 'toolBase.ypos')) || 0,
+                ysafe: Number(_get(values, 'toolBase.ysafe')) || 0,
+                zsafe: Number(_get(values, 'toolBase.zsafe')) || 0
+            },
+            toolSlots: {
+                slot1: Number(_get(values, 'toolSlots.slot1')) || 0,
+                slot2: Number(_get(values, 'toolSlots.slot2')) || 0,
+                slot3: Number(_get(values, 'toolSlots.slot3')) || 0,
+                slot4: Number(_get(values, 'toolSlots.slot4')) || 0,
+                slot5: Number(_get(values, 'toolSlots.slot5')) || 0,
+                slot6: Number(_get(values, 'toolSlots.slot6')) || 0,
+                slot7: Number(_get(values, 'toolSlots.slot7')) || 0,
+                slot8: Number(_get(values, 'toolSlots.slot8')) || 0
+            },
+            probeLocation: {
+                zsafe: Number(_get(values, 'probeLocation.zsafe')) || 0,
+                xpos: Number(_get(values, 'probeLocation.xpos')) || 0,
+                ypos: Number(_get(values, 'probeLocation.ypos')) || 0,
+                distance: Number(_get(values, 'probeLocation.distance')) || 0
             }
         });
     };
@@ -135,6 +181,230 @@ class CreateRecord extends Component {
         </FlexContainer>
     );
 
+    renderToolBase = () => (
+        <FlexContainer fluid gutterWidth={0}>
+            <Row>
+                <Col>
+                    <Field name="toolBase.xpos">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="X" sub="Base" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolBase.ypos">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Y" sub="Base" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolBase.zpos">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Z" sub="Base" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <Field name="toolBase.zsafe">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Z" sub="Safe" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolBase.ysafe">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Y" sub="Safe" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+            </Row>
+        </FlexContainer>
+    );
+
+    renderToolSlots = () => (
+        <FlexContainer fluid gutterWidth={0}>
+            <Row>
+                <Col>
+                    <Field name="toolSlots.slot1">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 1" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolSlots.slot2">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 2" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolSlots.slot3">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 3" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolSlots.slot4">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 4" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <Field name="toolSlots.slot5">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 5" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolSlots.slot6">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 6" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolSlots.slot7">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 7" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="toolSlots.slot8">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Slot 8" sub="X" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+            </Row>
+        </FlexContainer>
+    );
+
+    renderProbeLocation = () => (
+        <FlexContainer fluid gutterWidth={0}>
+            <Row>
+                <Col>
+                    <Field name="probeLocation.xpos">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="X" sub="Pos" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="probeLocation.ypos">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Y" sub="Pos" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="probeLocation.zsafe">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Z" sub="Safe" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="probeLocation.distance">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Distance" sub="" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+            </Row>
+        </FlexContainer>
+    );
+
     render() {
         const { closeModal, updateModalParams } = this.props.actions;
         const { alertMessage } = this.props.state.modal.params;
@@ -178,6 +448,24 @@ class CreateRecord extends Component {
                                     <SectionTitle>{i18n._('Limits')}</SectionTitle>
                                     <Margin left={24}>
                                         {this.renderLimits()}
+                                    </Margin>
+                                </SectionGroup>
+                                <SectionGroup style={{ marginBottom: 0 }}>
+                                    <SectionTitle>{i18n._('Tool Base')}</SectionTitle>
+                                    <Margin left={24}>
+                                        {this.renderToolBase()}
+                                    </Margin>
+                                </SectionGroup>
+                                <SectionGroup style={{ marginBottom: 0 }}>
+                                    <SectionTitle>{i18n._('Tool Slots')}</SectionTitle>
+                                    <Margin left={24}>
+                                        {this.renderToolSlots()}
+                                    </Margin>
+                                </SectionGroup>
+                                <SectionGroup style={{ marginBottom: 0 }}>
+                                    <SectionTitle>{i18n._('Probe Location')}</SectionTitle>
+                                    <Margin left={24}>
+                                        {this.renderProbeLocation()}
                                     </Margin>
                                 </SectionGroup>
                             </Modal.Body>
