@@ -42,6 +42,9 @@ const RESUME = '%resume';
 const MACRO = '%macro';
 const RELEASE_TOOL = '%releaseTool';
 const GRAB_TOOL = '%grabTool';
+const SET_CURRENT_TOOL = '%setcurrenttool';
+// const IS_TOOL_OUT = '%istoolout';
+// const IS_TOOL_IN = '%istoolin';
 const log = logger('controller:Grbl');
 const noop = _.noop;
 
@@ -217,9 +220,22 @@ class GrblController {
                         return `(${line})`;
                     }
 
-                    if (line === RELEASE_TOOL) {
-                        log.debug('Release tool from spindle');
-                        toolChange.emit('toolchange:release_on');
+                    if (line.indexOf(RELEASE_TOOL) === 0) {
+                        const slot = line.replace(RELEASE_TOOL, '').trim();
+                        log.debug('gbrl tool release');
+                        if (toolChange.isToolInSlot(slot)) {
+                            log.debug('Release tool from spindle');
+                            toolChange.emit('toolchange:release_on');
+                        } else {
+                            log.debug('Release tool from spindle - TOOL NOT IN SLOT');
+                            return 'M0 (Tool is not in slot)';
+                        }
+
+                        return `(${line})`;
+                    }
+
+                    if (line.indexOf(SET_CURRENT_TOOL) === 0) {
+                        toolChange.setCurrntTool(line.replace(SET_CURRENT_TOOL, '').trim());
                         return `(${line})`;
                     }
 
@@ -228,6 +244,7 @@ class GrblController {
                         toolChange.emit('toolchange:release_off');
                         return `(${line})`;
                     }
+
                     // Expression
                     // %_x=posx,_y=posy,_z=posz
                     evaluateAssignmentExpression(line.slice(1), context);
@@ -338,9 +355,6 @@ class GrblController {
                     let tool = line.replace('M6', '');
                     let macro = toolChange.returnToolChangeMacro(tool);
                     this.command('gcode', macro, context);
-                    // this.emit('toolchange', tool);
-                    log.debug(`sender - toolchange: ${line}`);
-                    // Surround M6 with parentheses to ignore unsupported command error
                     return `(${line})`;
                 }
 

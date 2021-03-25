@@ -4,13 +4,10 @@ import settings from '../../config/settings';
 import logger from '../../lib/logger';
 import config from '../configstore';
 
-
 const log = logger('service:toolchange');
 
 class ToolChange {
     io = null;
-
-    currentToolInSpindle = null;
 
     currentState = null;
 
@@ -20,6 +17,7 @@ class ToolChange {
         connected: false,
         release: false,
         blowout: false,
+        currentToolInSpindle: null,
         toolholders: [
             {
                 title: 'T1',
@@ -90,9 +88,19 @@ class ToolChange {
         }
     }
 
-    macroPutTool(toolBase, slotX) {
+    isToolInSlot(slot) {
+        log.debug(`Is tool ${slot} in slot`);
+        if (slot) {
+            const toolIndex = parseInt(slot.replace('slot', ''), 2);
+            return this.state.toolholders[toolIndex - 1].state !== 'Open';
+        }
+        return false;
+    }
+
+    macroPutTool(toolBase, slotX, slotName) {
         return `
-            ; Absolute positioning
+            %wait
+            ;Absolute positioning
             G90
 
             ; Raise to tool change Z
@@ -107,7 +115,7 @@ class ToolChange {
             G53 Y${toolBase.ypos}
             %wait
             G4 P2
-            %releaseTool
+            %releaseTool ${slotName}
             ; Go to Clearance Height
             G53 Z${toolBase.zsafe}
             %wait
@@ -116,8 +124,9 @@ class ToolChange {
         `;
     }
 
-    macroGetTool(toolBase, slotX) {
+    macroGetTool(toolBase, slotX, slotName) {
         return `
+            %wait
             ; Get te new tool
             G90
 
@@ -128,7 +137,7 @@ class ToolChange {
 
             ; Wait until the planner queue is empty
             %wait
-            %releaseTool
+            %releaseTool ${slotName}
             ;wait 2 seconds
             G4 P2
             G53 Z${toolBase.zpos}
@@ -141,6 +150,7 @@ class ToolChange {
             ; Go to Clearance Height
             G53 Z${toolBase.zsafe}
             %wait
+            %setcurrenttool ${slotName}
         `;
     }
 
@@ -167,7 +177,7 @@ class ToolChange {
 
             ; Update the tool length offset
             G43.1 Z[posz - ${originalOffset}]
-    
+
             ; Retract from the touch plate
             G91 ; Relative positioning
             G0 Z${probe.zsafe}
@@ -213,52 +223,56 @@ class ToolChange {
     }
 
     returnToolChangeMacro(tool) {
-        if (!tool.trim().length && !this.currentToolInSpindle) {
+        const self = this;
+        const currentToolInSpindle = this.state.currentToolInSpindle;
+
+        if (!tool.trim().length && !currentToolInSpindle) {
             log.debug(`No tool ${tool.trim()}`);
             return `M0 (No tool)
             $X
             `;
         }
         const slotName = tool.trim().toLowerCase().replace('t', 'slot');
-        if (this.currentToolInSpindle === slotName) {
+        if (currentToolInSpindle === slotName) {
             log.debug(`Tool already in spindle ${tool.trim()}`);
-            return '%resume';
+            return `(Tool already in spindle ${tool}})
+            %resume`;
         }
         // TODO: Get current slected machine from UI
         const machine = _find(config.get('machines'), { name: 'Cue Machine' });
         const toolBase = machine.toolBase;
         // const probe = machine.probeLocation;
-        let macroData = this.macroSetup();
+        let macroData = self.macroSetup();
 
-        if (this.currentToolInSpindle) {
-            const toolIndex = parseInt(this.currentToolInSpindle.replace('slot', ''), 2);
-            if (this.state.toolholders[toolIndex - 1].state !== 'Open') {
-                log.debug(`Tool slot occupied ${this.currentToolInSpindle}`);
-                return `M0 (Tool slot ${toolIndex} not open)
+        if (currentToolInSpindle) {
+            log.debug(`Return tool to ${currentToolInSpindle} index ${currentToolInSpindle}`);
+            if (self.isToolInSlot(currentToolInSpindle)) {
+                log.debug(`Tool slot occupied ${currentToolInSpindle}`);
+                return `M0 (Put tool in ${currentToolInSpindle} error - slot not open)
                 $X
                 `;
             }
-            macroData += this.macroPutTool(toolBase, machine.toolSlots[this.currentToolInSpindle]);
-            this.currentToolInSpindle = null;
+            macroData += self.macroPutTool(toolBase, machine.toolSlots[currentToolInSpindle], currentToolInSpindle);
         }
 
-        if (tool) {
+        if (tool && tool !== 'putaway') {
             const slotX = machine.toolSlots[slotName];
-            const toolIndex = parseInt(slotName.replace('slot', ''), 2);
-            log.debug(`Tool index ${toolIndex}`);
-            if (this.state.toolholders[toolIndex - 1].state === 'Open') {
+            if (!self.isToolInSlot(slotName)) {
                 log.debug(`Tool slot empty ${tool.trim()}`);
-                return `M0 (No tool in slot ${toolIndex})
+                return `M0 (Get tool from slot ${slotName} - error slot is empty)
                 $X
                 `;
             }
-            macroData += this.macroGetTool(toolBase, slotX);
-            this.currentToolInSpindle = slotName;
+            macroData += self.macroGetTool(toolBase, slotX, slotName);
         }
 
-        macroData += this.macroReturnOriginalPosition();
+        macroData += self.macroReturnOriginalPosition();
 
         return macroData;
+    }
+
+    setCurrntTool(slot) {
+        this.state.currentToolInSpindle = slot;
     }
 
     setToolChangeState(data) {
@@ -269,13 +283,14 @@ class ToolChange {
         for (let i = 2; i < states.length; i++) {
             tmpStates[i - 2].state = (states[i] === '1' ? 'Occupied' : 'Open');
         }
-        this.state = {
+        self.state = {
             connected: true,
+            currentToolInSpindle: self.state.currentToolInSpindle,
             release: (states[0].indexOf(1) === 3 ? 'ON' : 'OFF'),
             blowout: (states[1].indexOf(1) === 3 ? 'ON' : 'OFF'),
             toolholders: tmpStates
         };
-        this.controller.emit('toolchange:status', self.state);
+        self.controller.emit('toolchange:status', self.state);
         log.debug('setToolChangeState - ToolChange', self.state);
     }
 
