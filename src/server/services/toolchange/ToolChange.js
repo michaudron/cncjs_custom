@@ -89,12 +89,17 @@ class ToolChange {
     }
 
     isToolInSlot(slot) {
+        const self = this;
         log.debug(`Is tool ${slot} in slot`);
         if (slot) {
-            const toolIndex = parseInt(slot.replace('slot', ''), 2);
-            return this.state.toolholders[toolIndex - 1].state !== 'Open';
+            const index = slot.replace('slot', '').trim() * 1;
+            if (self.state.toolholders[index - 1]) {
+                return self.state.toolholders[index - 1].state !== 'Open';
+            } else {
+                log.error(`Invalid slot: ${slot}`);
+            }
         }
-        return false;
+        return -1;
     }
 
     macroPutTool(toolBase, slotX, slotName) {
@@ -224,6 +229,8 @@ class ToolChange {
 
     returnToolChangeMacro(tool) {
         const self = this;
+        const machine = _find(config.get('machines'), { name: 'Cue Machine' });
+        this.state.currentToolInSpindle = this.state.currentToolInSpindle || machine.toolInSpindle;
         const currentToolInSpindle = this.state.currentToolInSpindle;
 
         if (!tool.trim().length && !currentToolInSpindle) {
@@ -238,14 +245,13 @@ class ToolChange {
             return `(Tool already in spindle ${tool}})
             %resume`;
         }
-        // TODO: Get current slected machine from UI
-        const machine = _find(config.get('machines'), { name: 'Cue Machine' });
+
         const toolBase = machine.toolBase;
         // const probe = machine.probeLocation;
         let macroData = self.macroSetup();
 
         if (currentToolInSpindle) {
-            log.debug(`Return tool to ${currentToolInSpindle} index ${currentToolInSpindle}`);
+            log.debug(`Return tool to ${currentToolInSpindle}`);
             if (self.isToolInSlot(currentToolInSpindle)) {
                 log.debug(`Tool slot occupied ${currentToolInSpindle}`);
                 return `M0 (Put tool in ${currentToolInSpindle} error - slot not open)
@@ -257,6 +263,7 @@ class ToolChange {
 
         if (tool && tool !== 'putaway') {
             const slotX = machine.toolSlots[slotName];
+            log.debug(`Get tool from ${slotName}`);
             if (!self.isToolInSlot(slotName)) {
                 log.debug(`Tool slot empty ${tool.trim()}`);
                 return `M0 (Get tool from slot ${slotName} - error slot is empty)
@@ -271,8 +278,15 @@ class ToolChange {
         return macroData;
     }
 
-    setCurrntTool(slot) {
+    setCurrentTool(slot) {
         this.state.currentToolInSpindle = slot;
+        let machines = config.get('machines');
+        machines.forEach((machine) => {
+            if (machine.name === 'Cue Machine') {
+                machine.toolInSpindle = slot;
+                config.set('machines', machines);
+            }
+        });
     }
 
     setToolChangeState(data) {

@@ -35,6 +35,7 @@ class CreateRecord extends Component {
                     zmin: 0,
                     zmax: 0,
                 },
+                toolInSpindle: '',
                 toolBase: {
                     zpos: 0,
                     xpos: 0,
@@ -75,6 +76,7 @@ class CreateRecord extends Component {
                 zmin: Number(_get(values, 'limits.zmin')) || 0,
                 zmax: Number(_get(values, 'limits.zmax')) || 0,
             },
+            toolInSpindle: _get(values, 'toolInSpindle', ''),
             toolBase: {
                 zpos: Number(_get(values, 'toolBase.zpos')) || 0,
                 xpos: Number(_get(values, 'toolBase.xpos')) || 0,
@@ -250,6 +252,19 @@ class CreateRecord extends Component {
 
     renderToolSlots = () => (
         <FlexContainer fluid gutterWidth={0}>
+            <Row>
+                <Col>
+                    <Field name="toolInSpindle">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="In Spindle" sub="" /></label>
+                                <Input {...input} type="text" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+            </Row>
             <Row>
                 <Col>
                     <Field name="toolSlots.slot1">

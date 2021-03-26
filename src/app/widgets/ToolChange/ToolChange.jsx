@@ -46,6 +46,10 @@ class ToolChange extends PureComponent {
                         title="Blowout"
                         value={state.toolchange.blowout}
                     />
+                    <Holder
+                        title="Tool In Spindle"
+                        value={state.toolchange.currentToolInSpindle}
+                    />
                 </div>
 
                 <div className={classNames('row', 'no-gutters', styles.holder)}>

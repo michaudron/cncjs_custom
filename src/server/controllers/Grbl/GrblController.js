@@ -235,7 +235,7 @@ class GrblController {
                     }
 
                     if (line.indexOf(SET_CURRENT_TOOL) === 0) {
-                        toolChange.setCurrntTool(line.replace(SET_CURRENT_TOOL, '').trim());
+                        toolChange.setCurrentTool(line.replace(SET_CURRENT_TOOL, '').trim());
                         return `(${line})`;
                     }
 
