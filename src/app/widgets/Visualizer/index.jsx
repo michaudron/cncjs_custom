@@ -50,6 +50,8 @@ import {
     NOTIFICATION_M2_PROGRAM_END,
     NOTIFICATION_M30_PROGRAM_END,
     NOTIFICATION_M6_TOOL_CHANGE,
+    NOTIFICATION_M6_SLOT_NOT_EMPTY,
+    NOTIFICATION_M6_SLOT_IS_EMPTY,
     NOTIFICATION_M109_SET_EXTRUDER_TEMPERATURE,
     NOTIFICATION_M190_SET_HEATED_BED_TEMPERATURE
 } from './constants';
@@ -411,6 +413,73 @@ class VisualizerWidget extends PureComponent {
 
                     return;
                 }
+                // M6 Tool Change empty slot
+                if (notification.type === NOTIFICATION_M6_SLOT_IS_EMPTY) {
+                    portal(({ onClose }) => (
+                        <Modal disableOverlay size="xs" onClose={onClose}>
+                            <Modal.Header>
+                                <Modal.Title>
+                                    {i18n._('Tool Change: Slot  is  empty')}
+                                </Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                {i18n._('Are you sure you want to resume program execution?')}
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button onClick={onClose}>
+                                    {i18n._('No')}
+                                </Button>
+                                <Button
+                                    btnStyle="primary"
+                                    onClick={chainedFunction(
+                                        () => {
+                                            controller.command('gcode:resume');
+                                        },
+                                        onClose
+                                    )}
+                                >
+                                    {i18n._('Yes')}
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
+                    ));
+
+                    return;
+                }
+
+                // M6 Tool Change empty slot
+                if (notification.type === NOTIFICATION_M6_SLOT_NOT_EMPTY) {
+                    portal(({ onClose }) => (
+                        <Modal disableOverlay size="xs" onClose={onClose}>
+                            <Modal.Header>
+                                <Modal.Title>
+                                    {i18n._('Tool Change: Slot  is NOT empty')}
+                                </Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                {i18n._('Are you sure you want to resume program execution?')}
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button onClick={onClose}>
+                                    {i18n._('No')}
+                                </Button>
+                                <Button
+                                    btnStyle="primary"
+                                    onClick={chainedFunction(
+                                        () => {
+                                            controller.command('gcode:resume');
+                                        },
+                                        onClose
+                                    )}
+                                >
+                                    {i18n._('Yes')}
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
+                    ));
+
+                    return;
+                }
 
                 controller.command('gcode:resume');
             }
@@ -615,10 +684,10 @@ class VisualizerWidget extends PureComponent {
                 if (err) {
                     notification.type = NOTIFICATION_PROGRAM_ERROR;
                     notification.data = err;
-                } else if (data === 'M0') {
+                } else if (data.indexOf('M0') > -1) {
                     // M0 Program Pause
                     notification.type = NOTIFICATION_M0_PROGRAM_PAUSE;
-                } else if (data === 'M1') {
+                } else if (data.indexOf('M1') > -1) {
                     // M1 Program Pause
                     notification.type = NOTIFICATION_M1_PROGRAM_PAUSE;
                 } else if (data === 'M2') {

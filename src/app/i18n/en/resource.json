@@ -494,5 +494,7 @@
     "Tool Slots": "Tool Slots",
     "Probe Location": "Probe Location",
     "Tool Change Widget": "Tool Change Widget",
-    "This widget allows you to monitor and control tool holders and relays": "This widget allows you to monitor and control tool holders and relays"
+    "This widget allows you to monitor and control tool holders and relays": "This widget allows you to monitor and control tool holders and relays",
+    "Tool Change: Slot  is  empty": "Tool Change: Slot  is  empty",
+    "Tool Change: Slot  is NOT empty": "Tool Change: Slot  is NOT empty"
 }

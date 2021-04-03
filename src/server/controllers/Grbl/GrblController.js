@@ -40,9 +40,8 @@ import toolChange from '../../services/toolchange';
 const WAIT = '%wait';
 const RESUME = '%resume';
 const MACRO = '%macro';
-const RELEASE_TOOL = '%releaseTool';
-const GRAB_TOOL = '%grabTool';
 const SET_CURRENT_TOOL = '%setcurrenttool';
+const TOOL_CHANGE_RELAY = '%tc_relay';
 // const IS_TOOL_OUT = '%istoolout';
 // const IS_TOOL_IN = '%istoolin';
 const log = logger('controller:Grbl');
@@ -220,28 +219,13 @@ class GrblController {
                         return `(${line})`;
                     }
 
-                    if (line.indexOf(RELEASE_TOOL) === 0) {
-                        const slot = line.replace(RELEASE_TOOL, '').trim();
-                        log.debug('gbrl tool release');
-                        if (toolChange.isToolInSlot(slot)) {
-                            log.debug('Release tool from spindle');
-                            toolChange.emit('toolchange:release_on');
-                        } else {
-                            log.debug('Release tool from spindle - TOOL NOT IN SLOT');
-                            return 'M0 (Tool is not in slot)';
-                        }
-
-                        return `(${line})`;
-                    }
-
                     if (line.indexOf(SET_CURRENT_TOOL) === 0) {
                         toolChange.setCurrentTool(line.replace(SET_CURRENT_TOOL, '').trim());
                         return `(${line})`;
                     }
 
-                    if (line === GRAB_TOOL) {
-                        log.debug('Grab tool from holder');
-                        toolChange.emit('toolchange:release_off');
+                    if (line.indexOf(TOOL_CHANGE_RELAY) > -1) {
+                        toolChange.emit('toolchange:relay', line);
                         return `(${line})`;
                     }
 
@@ -261,17 +245,20 @@ class GrblController {
                     const programMode = _.intersection(words, ['M0', 'M1'])[0];
                     if (programMode === 'M0') {
                         log.debug('M0 Program Pause');
-                        this.feeder.hold({ data: 'M0' }); // Hold reason
+                        this.feeder.hold({ data: `M0 Pause ${line}` }); // Hold reason
                     } else if (programMode === 'M1') {
                         log.debug('M1 Program Pause');
-                        this.feeder.hold({ data: 'M1' }); // Hold reason
+                        this.feeder.hold({ data: `M1 Pause ${line}` }); // Hold reason
                     }
                 }
 
                 // M6 Tool Change
                 if (_.includes(words, 'M6')) {
-                    log.debug('Feeeder - M6 Tool Change');
-                    this.feeder.hold({ data: line }); // Hold reason
+                    log.debug('Feeder - M6 Tool Change');
+                    this.feeder.hold({ data: line });
+                    let tool = line.replace('M6', '');
+                    let macro = toolChange.returnToolChangeMacro(tool);
+                    this.command('gcode', macro, context);
                     return `(${line})`;
                 }
 
@@ -325,6 +312,16 @@ class GrblController {
                         return 'G4 P0.5'; // dwell
                     }
 
+                    if (line.indexOf(SET_CURRENT_TOOL) === 0) {
+                        toolChange.setCurrentTool(line.replace(SET_CURRENT_TOOL, '').trim());
+                        return `(${line})`;
+                    }
+
+                    if (line.indexOf(TOOL_CHANGE_RELAY) === 0) {
+                        toolChange.emit('toolchange:relay', line);
+                        return `(${line})`;
+                    }
+
                     // Expression
                     // %_x=posx,_y=posy,_z=posz
                     evaluateAssignmentExpression(line.slice(1), context);
@@ -353,8 +350,7 @@ class GrblController {
                     log.debug(`sender - M6 Tool Change: line=${sent + 1}, sent=${sent}, received=${received}`);
                     this.workflow.pause({ data: line });
                     let tool = line.replace('M6', '');
-                    let macro = toolChange.returnToolChangeMacro(tool);
-                    this.command('gcode', macro, context);
+                    toolChange.changeTool(tool, context);
                     return `(${line})`;
                 }
 
