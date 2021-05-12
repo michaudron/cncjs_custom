@@ -40,7 +40,6 @@ import toolChange from '../../services/toolchange';
 const WAIT = '%wait';
 const RESUME = '%resume';
 const MACRO = '%macro';
-const SET_CURRENT_TOOL = '%setcurrenttool';
 const TOOL_CHANGE_RELAY = '%tc_relay';
 // const IS_TOOL_OUT = '%istoolout';
 // const IS_TOOL_IN = '%istoolin';
@@ -219,11 +218,6 @@ class GrblController {
                         return `(${line})`;
                     }
 
-                    if (line.indexOf(SET_CURRENT_TOOL) === 0) {
-                        toolChange.setCurrentTool(line.replace(SET_CURRENT_TOOL, '').trim());
-                        return `(${line})`;
-                    }
-
                     if (line.indexOf(TOOL_CHANGE_RELAY) > -1) {
                         toolChange.emit('toolchange:relay', line);
                         return `(${line})`;
@@ -256,9 +250,6 @@ class GrblController {
                 if (_.includes(words, 'M6')) {
                     log.debug('Feeder - M6 Tool Change');
                     this.feeder.hold({ data: line });
-                    let tool = line.replace('M6', '');
-                    let macro = toolChange.returnToolChangeMacro(tool);
-                    this.command('gcode', macro, context);
                     return `(${line})`;
                 }
 
@@ -310,11 +301,6 @@ class GrblController {
                         log.debug(`Wait for the planner to empty: line=${sent + 1}, sent=${sent}, received=${received}`);
                         this.sender.hold({ data: WAIT }); // Hold reason
                         return 'G4 P0.5'; // dwell
-                    }
-
-                    if (line.indexOf(SET_CURRENT_TOOL) === 0) {
-                        toolChange.setCurrentTool(line.replace(SET_CURRENT_TOOL, '').trim());
-                        return `(${line})`;
                     }
 
                     if (line.indexOf(TOOL_CHANGE_RELAY) === 0) {
@@ -1374,16 +1360,9 @@ class GrblController {
                     this.command('gcode:load', file, data, context, callback);
                 });
             },
-            'toolchange:release_on': (data) => {
-                log.debug('Command toolchange:release_on', data);
-                toolChange.emit('toolchange:release_on', data);
-            },
-            'toolchange:release_off': (data) => {
-                log.debug('Command toolchange:release_off', data);
-                toolChange.emit('toolchange:release_off', data);
-            },
-            'toolchange': (data) => {
-                log.debug('Toolchange', data);
+            'toolchange': () => {
+                toolChange.command(cmd, ...args);
+                log.debug('Toolchange', cmd, args);
             }
         }[cmd];
 

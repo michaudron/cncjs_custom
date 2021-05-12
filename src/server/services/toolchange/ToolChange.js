@@ -83,23 +83,33 @@ class ToolChange {
                     self.controller.command('gcode', macro, self.context);
                 });
 
+                this.io.on('toolchange:log', (data) => {
+                    log.debug(data);
+                });
                 this.io.on('toolchange:status', (data) => {
                     self.currentState = data;
                     self.setToolChangeState(data);
                 });
             }
-            // this.io.emit('toolchange:status');
-            // this.emit('status');
         } else {
             log.warn('Missing configuration for tool change.');
         }
     }
 
+    getTool(newTool, stat, context) {
+        const machine = _find(config.get('machines'), { name: 'Cue Machine' });
+        this.emit('toolchange:gettool', { newTool, machine });
+        log.debug(`${newTool} ${stat}`, context);
+    }
+
     changeTool(newTool, context) {
+        // ToDo map tools to slots
+        newTool = newTool.replace('T', 'slot').trim();
         const { posx, posy, posz, posa, posb, posc, modal, tool } = { ...context };
+        // ToDo get machine name from the selected machine
         const machine = _find(config.get('machines'), { name: 'Cue Machine' });
         this.context = context;
-        this.emit('toolchange:new', { newTool, posx, posy, posz, posa, posb, posc, modal, tool, machine });
+        this.emit('toolchange:change', { newTool, posx, posy, posz, posa, posb, posc, modal, tool, machine });
     }
 
     setCurrentTool(slot) {
@@ -120,19 +130,25 @@ class ToolChange {
         const self = this;
         let tmpStates = self.state.toolholders;
 
-        for (let i = 2; i < states.length; i++) {
-            tmpStates[i - 2].state = (states[i] === '1' ? 'Occupied' : 'Open');
+        for (let i = 3; i < states.length; i++) {
+            tmpStates[i - 3].state = (states[i] === '1' ? 'Occupied' : 'Open');
         }
 
         self.state = {
             connected: true,
-            currentToolInSpindle: self.state.currentToolInSpindle,
+            currentToolInSpindle: states[2].replace('TS:', ''),
             release: (states[0].indexOf(1) === 3 ? 'ON' : 'OFF'),
             blowout: (states[1].indexOf(1) === 3 ? 'ON' : 'OFF'),
             toolholders: tmpStates
         };
         self.controller.emit('toolchange:status', self.state);
-        log.debug('setToolChangeState - ToolChange', self.state);
+    }
+
+    command(cmd, ...args) {
+        // const handler = {
+        //     'gcode:load': () => {
+        //     }
+        log.debug('tool change', cmd, args);
     }
 
     emit(eventName, options) {

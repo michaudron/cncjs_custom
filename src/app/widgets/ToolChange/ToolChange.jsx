@@ -15,7 +15,8 @@ import Holder from './components/Holders';
 class ToolChange extends PureComponent {
     static propTypes = {
         state: PropTypes.object,
-        config: PropTypes.object
+        config: PropTypes.object,
+        actions: PropTypes.object
     };
 
     observer = null;
@@ -33,8 +34,58 @@ class ToolChange extends PureComponent {
     }
 
     render() {
-        const { state } = this.props;
+        const { state, actions } = this.props;
+        const fieldList = state.toolchange.toolholders.map((holder, index) => {
+            if (index < 4) {
+                return (
+                    <RepeatButton
+                        key={index.toString()}
+                        className="btn btn-default"
+                        style={{ padding: 5 }}
+                        onClick={() => {
+                            actions.toolGet(holder.title, holder.state);
+                        }}
+                    >
+                        <span style={{ marginLeft: 5, marginRight: 5 }}>
+                            {holder.title}
+                        </span>
+                        {holder.state === 'Open' && (
+                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
+                        )}
+                        {holder.state === 'Occupied' && (
+                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
+                        )}
+                    </RepeatButton>
+                );
+            }
+            return (null);
+        });
 
+        const fieldList2 = state.toolchange.toolholders.map((holder, index) => {
+            if (index > 3) {
+                return (
+                    <RepeatButton
+                        key={index.toString()}
+                        className="btn btn-default"
+                        style={{ padding: 5 }}
+                        onClick={() => {
+                            actions.toolGet(holder.title, holder.state);
+                        }}
+                    >
+                        <span style={{ marginLeft: 5, marginRight: 5 }}>
+                            {holder.title}
+                        </span>
+                        {holder.state === 'Open' && (
+                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
+                        )}
+                        {holder.state === 'Occupied' && (
+                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
+                        )}
+                    </RepeatButton>
+                );
+            }
+            return (null);
+        });
         return (
             <div>
                 <div>
@@ -53,121 +104,10 @@ class ToolChange extends PureComponent {
                 </div>
 
                 <div className={classNames('row', 'no-gutters', styles.holder)}>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[0].title}
-                        </span>
-                        {state.toolchange.toolholders[0].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[0].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[1].title}
-                        </span>
-                        {state.toolchange.toolholders[1].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[1].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[2].title}
-                        </span>
-                        {state.toolchange.toolholders[2].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[2].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[3].title}
-                        </span>
-                        {state.toolchange.toolholders[3].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[3].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
+                    {fieldList}
                 </div>
                 <div className={classNames('row', 'no-gutters', styles.holder)}>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[4].title}
-                        </span>
-                        {state.toolchange.toolholders[4].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[4].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[5].title}
-                        </span>
-                        {state.toolchange.toolholders[5].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[5].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[6].title}
-                        </span>
-                        {state.toolchange.toolholders[6].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[6].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
-                    <RepeatButton
-                        className="btn btn-default"
-                        style={{ padding: 5 }}
-                    >
-                        <span style={{ marginLeft: 5, marginRight: 5 }}>
-                            {state.toolchange.toolholders[7].title}
-                        </span>
-                        {state.toolchange.toolholders[7].state === 'Open' && (
-                            <i className="fa fa-circle-o" style={{ fontSize: 16 }} />
-                        )}
-                        {state.toolchange.toolholders[7].state === 'Occupied' && (
-                            <i className="fa fa-arrow-circle-o-down" style={{ fontSize: 16 }} />
-                        )}
-                    </RepeatButton>
-
+                    {fieldList2}
                 </div>
             </div>
         );

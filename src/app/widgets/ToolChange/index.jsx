@@ -74,7 +74,13 @@ class ToolChangeWidget extends PureComponent {
             }
         },
         getToolChangeStatus: () => {
-            // controller.getRelayStatus();
+            // this causes a loop
+            // controller.command('toolchange:getstatus');
+        },
+        toolGet: (field, stat) => {
+            console.log('Tool Change:', field, stat);
+            const command = 'toolGet';
+            controller.command('toolchange', command, field, stat);
         }
     };
 
@@ -88,6 +94,7 @@ class ToolChangeWidget extends PureComponent {
             this.setState({ ...initialState });
         },
         'workflow:state': (workflowState) => {
+            console.log('ToolChange workflowState', workflowState);
             this.setState(state => ({
                 workflow: {
                     state: workflowState
