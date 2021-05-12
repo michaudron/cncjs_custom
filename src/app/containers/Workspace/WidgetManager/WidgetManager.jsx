@@ -100,9 +100,9 @@ class WidgetManager extends PureComponent {
             disabled: false
         },
         {
-            id: 'switches',
-            caption: i18n._('Switch Widget'),
-            details: i18n._('This widget allows you to monitor and control switches attached to the relays'),
+            id: 'toolchange',
+            caption: i18n._('Tool Change Widget'),
+            details: i18n._('This widget allows you to monitor and control tool holders and relays'),
             visible: true,
             disabled: false
         }

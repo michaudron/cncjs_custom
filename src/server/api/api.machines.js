@@ -46,7 +46,7 @@ const getSanitizedRecords = () => {
 };
 
 const ensureMachineProfile = (payload) => {
-    const { id, name, limits, toolBase, toolSlots } = { ...payload };
+    const { id, name, limits, toolInSpindle, toolBase, toolSlots, probeLocation } = { ...payload };
     const { xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0 } = { ...limits };
     const { zpos = 0, xpos = 0, ypos = 0, ysafe = 0, zsafe = 0 } = { ...toolBase };
     const { slot1 = 0, slot2 = 0, slot3 = 0, slot4 = 0, slot5 = 0, slot6 = 0, slot7 = 0, slot8 = 0 } = { ...toolSlots };
@@ -62,6 +62,7 @@ const ensureMachineProfile = (payload) => {
             zmin: ensureNumber(zmin) || 0,
             zmax: ensureNumber(zmax) || 0,
         },
+        toolInSpindle: ensureString(toolInSpindle),
         toolBase: {
             zpos: ensureNumber(zpos) || 0,
             xpos: ensureNumber(xpos) || 0,
@@ -80,9 +81,10 @@ const ensureMachineProfile = (payload) => {
             slot8: ensureNumber(slot8) || 0
         },
         probeLocation: {
-            zsafe: ensureNumber(zsafe) || 0,
-            xpos: ensureNumber(xpos) || 0,
-            ypos: ensureNumber(ypos) || 0
+            zsafe: ensureNumber(probeLocation.zsafe) || 0,
+            xpos: ensureNumber(probeLocation.xpos) || 0,
+            ypos: ensureNumber(probeLocation.ypos) || 0,
+            distance: ensureNumber(probeLocation.distance) || 0
         }
     };
 };
@@ -173,6 +175,7 @@ export const update = (req, res) => {
             ['limits.ymax', ensureNumber],
             ['limits.zmin', ensureNumber],
             ['limits.zmax', ensureNumber],
+            ['toolInSpindle', ensureString],
             ['toolBase.zpos', ensureNumber],
             ['toolBase.xpos', ensureNumber],
             ['toolBase.ypos', ensureNumber],
@@ -188,7 +191,8 @@ export const update = (req, res) => {
             ['toolSlots.slot8', ensureNumber],
             ['probeLocation.zsafe', ensureNumber],
             ['probeLocation.xpos', ensureNumber],
-            ['probeLocation.ypos', ensureNumber]
+            ['probeLocation.ypos', ensureNumber],
+            ['probeLocation.distance', ensureNumber]
         ].forEach(it => {
             const [key, ensureType] = it;
             const defaultValue = _get(record, key);

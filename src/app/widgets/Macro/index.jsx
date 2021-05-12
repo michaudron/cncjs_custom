@@ -200,7 +200,7 @@ class MacroWidget extends PureComponent {
         },
         'macro:auto': async (data) => {
             log.debug('Run macro', data);
-            let id = data.replace('M6 ', '').trim();
+            let id = data.trim();
             let res;
             try {
                 res = await api.macros.readByName(id);

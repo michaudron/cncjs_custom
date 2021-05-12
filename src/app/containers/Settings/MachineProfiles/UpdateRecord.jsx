@@ -34,6 +34,7 @@ class UpdateRecord extends Component {
                 zmin: Number(_get(values, 'limits.zmin')) || 0,
                 zmax: Number(_get(values, 'limits.zmax')) || 0,
             },
+            toolInSpindle: _get(values, 'toolInSpindle', ''),
             toolBase: {
                 zpos: Number(_get(values, 'toolBase.zpos')) || 0,
                 xpos: Number(_get(values, 'toolBase.xpos')) || 0,
@@ -54,7 +55,8 @@ class UpdateRecord extends Component {
             probeLocation: {
                 zsafe: Number(_get(values, 'probeLocation.zsafe')) || 0,
                 xpos: Number(_get(values, 'probeLocation.xpos')) || 0,
-                ypos: Number(_get(values, 'probeLocation.ypos')) || 0
+                ypos: Number(_get(values, 'probeLocation.ypos')) || 0,
+                distance: Number(_get(values, 'probeLocation.distance')) || 0
             }
         };
     }
@@ -226,6 +228,19 @@ class UpdateRecord extends Component {
         <FlexContainer fluid gutterWidth={0}>
             <Row>
                 <Col>
+                    <Field name="toolInSpindle">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="In Spindle" sub="" /></label>
+                                <Input {...input} type="text" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
                     <Field name="toolSlots.slot1">
                         {({ input, meta }) => (
                             <FormGroup>
@@ -357,6 +372,18 @@ class UpdateRecord extends Component {
                         {({ input, meta }) => (
                             <FormGroup>
                                 <label><Axis value="Z" sub="Safe" /></label>
+                                <Input {...input} type="number" />
+                                {meta.touched && meta.error && <Error>{meta.error}</Error>}
+                            </FormGroup>
+                        )}
+                    </Field>
+                </Col>
+                <Col width="auto" style={{ width: 16 }} />
+                <Col>
+                    <Field name="probeLocation.distance">
+                        {({ input, meta }) => (
+                            <FormGroup>
+                                <label><Axis value="Distance" sub="" /></label>
                                 <Input {...input} type="number" />
                                 {meta.touched && meta.error && <Error>{meta.error}</Error>}
                             </FormGroup>

@@ -52,7 +52,7 @@ class SerialController {
         'controller:state': [],
         'message': [],
         'macro:auto': [],
-        'relay:status': [],
+        'toolchange:status': [],
         'toolchange': []
     };
 

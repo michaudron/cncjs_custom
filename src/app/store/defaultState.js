@@ -22,7 +22,7 @@ const defaultState = {
             secondary: {
                 show: true,
                 widgets: [
-                    'axes', 'gcode', 'macro', 'probe', 'spindle', 'switches'
+                    'axes', 'gcode', 'macro', 'probe', 'spindle', 'toolchange'
                 ]
             }
         },
@@ -163,7 +163,7 @@ const defaultState = {
             minimized: false,
             speed: 1000
         },
-        switches: {
+        toolchange: {
             minimized: true
         },
         tinyg: {

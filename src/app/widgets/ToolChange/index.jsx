@@ -6,7 +6,7 @@ import Widget from 'app/components/Widget';
 import controller from 'app/lib/controller';
 import i18n from 'app/lib/i18n';
 import WidgetConfig from '../WidgetConfig';
-import Swtiches from './Switches';
+import ToolChange from './ToolChange';
 import Settings from './Settings';
 import {
     MODAL_NONE,
@@ -14,7 +14,7 @@ import {
 } from './constants';
 import styles from './index.styl';
 
-class SwitchesWidget extends PureComponent {
+class ToolChangeWidget extends PureComponent {
     static propTypes = {
         widgetId: PropTypes.string.isRequired,
         onFork: PropTypes.func.isRequired,
@@ -73,9 +73,14 @@ class SwitchesWidget extends PureComponent {
                 this.content.reload(forceGet);
             }
         },
-        getRelayStatus: () => {
-            // TODO - get back to fixing this need to deal with the rlays and change them to PI communication
-            // controller.getRelayStatus();
+        getToolChangeStatus: () => {
+            // this causes a loop
+            // controller.command('toolchange:getstatus');
+        },
+        toolGet: (field, stat) => {
+            console.log('Tool Change:', field, stat);
+            const command = 'toolGet';
+            controller.command('toolchange', command, field, stat);
         }
     };
 
@@ -89,14 +94,20 @@ class SwitchesWidget extends PureComponent {
             this.setState({ ...initialState });
         },
         'workflow:state': (workflowState) => {
+            console.log('ToolChange workflowState', workflowState);
             this.setState(state => ({
                 workflow: {
                     state: workflowState
                 }
             }));
         },
-        'relay:status': (relayStatus) => {
-            this.setSwtichState(relayStatus);
+        'toolchange:status': (toolChangeState) => {
+            this.setState(state => ({
+                toolchange: toolChangeState
+            }));
+        },
+        'toolchange': (data) => {
+            console.log('Tool Change:', data);
         }
     };
 
@@ -122,7 +133,7 @@ class SwitchesWidget extends PureComponent {
         this.config.set('disabled', disabled);
         this.config.set('minimized', minimized);
         this.config.set('title', title);
-        this.action.getRelayStatus();
+        this.action.getToolChangeStatus();
     }
 
     getInitialState() {
@@ -130,7 +141,7 @@ class SwitchesWidget extends PureComponent {
             minimized: this.config.get('minimized', false),
             isFullscreen: false,
             disabled: this.config.get('disabled'),
-            title: this.config.get('title', 'Switches'),
+            title: this.config.get('title', 'ToolChange'),
             port: controller.port,
             controller: {
                 type: controller.type,
@@ -143,40 +154,42 @@ class SwitchesWidget extends PureComponent {
                 name: MODAL_NONE,
                 params: {}
             },
-            switches: {
+            toolchange: {
                 connected: false,
-                switch: [
+                release: 'OFF',
+                blowout: 'OFF',
+                toolholders: [
                     {
-                        title: 'switch1',
-                        state: false
+                        title: 'T1',
+                        state: 'Open'
                     },
                     {
-                        title: 'switch2',
-                        state: false
+                        title: 'T2',
+                        state: 'Open'
                     },
                     {
-                        title: 'switch3',
-                        state: false
+                        title: 'T3',
+                        state: 'Open'
                     },
                     {
-                        title: 'switch4',
-                        state: false
+                        title: 'T4',
+                        state: 'Open'
                     },
                     {
-                        title: 'switch5',
-                        state: false
+                        title: 'T5',
+                        state: 'Open'
                     },
                     {
-                        title: 'switch6',
-                        state: false
+                        title: 'T6',
+                        state: 'Open'
                     },
                     {
-                        title: 'switch7',
-                        state: false
+                        title: 'T7',
+                        state: 'Open'
                     },
                     {
-                        title: 'switch8',
-                        state: false
+                        title: 'T8',
+                        state: 'Open'
                     }
                 ]
             }
@@ -194,22 +207,6 @@ class SwitchesWidget extends PureComponent {
         Object.keys(this.controllerEvents).forEach(eventName => {
             const callback = this.controllerEvents[eventName];
             controller.removeListener(eventName, callback);
-        });
-    }
-
-    setSwtichState(data) {
-        const switchStates = data.split(',');
-        const self = this;
-        let tmpSwitches = self.state.switches.switch;
-
-        for (let i = 0; i < switchStates.length; i++) {
-            tmpSwitches[i].state = switchStates[i] === 'ON';
-        }
-        self.setState({
-            switches: {
-                connected: true,
-                switch: tmpSwitches
-            }
         });
     }
 
@@ -342,7 +339,7 @@ class SwitchesWidget extends PureComponent {
                             onCancel={action.closeModal}
                         />
                     )}
-                    <Swtiches
+                    <ToolChange
                         ref={node => {
                             this.content = node;
                         }}
@@ -357,4 +354,4 @@ class SwitchesWidget extends PureComponent {
     }
 }
 
-export default SwitchesWidget;
+export default ToolChangeWidget;
